@@ -12,7 +12,7 @@ WORKDIR /app
 COPY --chown=appuser:appgroup go.mod go.sum ./
 RUN go mod download
 
-ENV PORT=3000
+ENV PORT=4000
 EXPOSE ${PORT}
 
 # dev stage
@@ -40,6 +40,6 @@ COPY .env .
 RUN addgroup -S appgroup && adduser -S appuser -G appgroup
 # switch to the custom user
 USER appuser:appgroup
-ENV PORT=3000
+ENV PORT=4000
 EXPOSE ${PORT}
 CMD ["/app/main"]
