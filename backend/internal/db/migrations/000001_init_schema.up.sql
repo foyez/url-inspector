@@ -20,7 +20,7 @@ CREATE TABLE `broken_links` (
   `id` bigint PRIMARY KEY AUTO_INCREMENT,
   `url_id` bigint NOT NULL,
   `link` text NOT NULL,
-  `status` int NOT NULL
+  `status_code` int NOT NULL
 );
 
 CREATE INDEX `idx_created_at` ON `urls` (`created_at`);

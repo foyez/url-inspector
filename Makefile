@@ -5,11 +5,11 @@ include backend/.env
 ## ===========
 
 BE_DIR=backend
-MIGRATE_CMD= \
+DOCKER_CMD= \
 	docker compose -p dev \
 	-f $(BE_DIR)/docker-compose.yaml \
 	-f $(BE_DIR)/docker-compose.dev.yaml \
-	run --rm migrate
+	run --rm
 MIGRATIONS_PATH=/migrations
 
 ## up_dev: up docker containers for development
@@ -40,17 +40,22 @@ create_migration:
 	fi
 	@echo "creating migration files..."
 	@mkdir -p db
-	$(MIGRATE_CMD) create -ext sql -dir $(MIGRATIONS_PATH) -seq $(name)
+	$(DOCKER_CMD) migrate create -ext sql -dir $(MIGRATIONS_PATH) -seq $(name)
 
 ## migrateup: apply all up migrations via Docker Compose
 migrateup:
 	@echo "🚀 applying all up migrations..."
-	$(MIGRATE_CMD) -path=$(MIGRATIONS_PATH) -database="$(DB_SOURCE)" -verbose up
+	$(DOCKER_CMD) migrate -path=$(MIGRATIONS_PATH) -database="$(DB_SOURCE)" -verbose up
 
 ## migratedown: apply all down migrations via Docker Compose
 migratedown:
 	@echo "⏬ applying all down migrations..."
-	$(MIGRATE_CMD) -path=$(MIGRATIONS_PATH) -database="$(DB_SOURCE)" -verbose down
+	$(DOCKER_CMD) migrate -path=$(MIGRATIONS_PATH) -database="$(DB_SOURCE)" -verbose down
+
+## sqlc: generate Go code from SQL
+sqlc:
+	@echo "🔧 generating go code from SQL..."
+	$(DOCKER_CMD) sqlc generate
 
 ## ===========
 ## FRONTEND
