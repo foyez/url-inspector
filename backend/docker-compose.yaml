@@ -9,3 +9,32 @@ services:
     environment:
       - GO_ENV=production
       - PORT=${PORT} # Pass the PORT variable to the container
+      - DB_DRIVER=${DB_DRIVER}
+      - DB_HOST=${DB_HOST}
+      - DB_PORT=${DB_PORT}
+      - DB_USER=${DB_USER}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - DB_NAME=${DB_NAME}
+      - DB_SOURCE=${DB_SOURCE}
+    depends_on:
+      mysql:
+        condition: service_healthy
+  mysql:
+    image: mysql:9.3.0
+    environment:
+      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
+      - MYSQL_USER=${DB_USER}
+      - MYSQL_PASSWORD=${DB_PASSWORD}
+      - MYSQL_DATABASE=${DB_NAME}
+    ports:
+      - "3306:3306"
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+    volumes:
+      - mysql_data_prod:/var/lib/mysql
+
+volumes:
+  mysql_data_prod:

@@ -6,3 +6,17 @@ services:
       - GO_ENV=development
     volumes:
       - .:/app # Mount the current directory to the container
+  migrate:
+    image: migrate/migrate
+    container_name: migrate-tool
+    depends_on:
+      mysql:
+        condition: service_healthy
+    volumes:
+      - ./internal/db/migrations:/migrations
+  mysql:
+    volumes:
+      - mysql_data_dev:/var/lib/mysql
+
+volumes:
+  mysql_data_dev:
