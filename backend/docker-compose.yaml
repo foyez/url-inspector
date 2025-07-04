@@ -1,0 +1,11 @@
+services:
+  api:
+    build:
+      context: .
+      target: prod
+      dockerfile: Dockerfile
+    ports:
+      - "${PORT}:${PORT}"
+    environment:
+      - GO_ENV=production
+      - PORT=${PORT} # Pass the PORT variable to the container
