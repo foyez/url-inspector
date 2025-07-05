@@ -9,7 +9,6 @@ INSERT INTO heading_counts (
   h6_count
 ) VALUES (?, ?, ?, ?, ?, ?, ?);
 
--- name: GetHeadingCountsByURL :many
+-- name: GetHeadingCountsByURL :one
 SELECT * FROM heading_counts
-WHERE url_id = ?
-ORDER BY id;
+WHERE url_id = ?;

@@ -9,42 +9,25 @@ import (
 	"context"
 )
 
-const getHeadingCountsByURL = `-- name: GetHeadingCountsByURL :many
+const getHeadingCountsByURL = `-- name: GetHeadingCountsByURL :one
 SELECT id, url_id, h1_count, h2_count, h3_count, h4_count, h5_count, h6_count FROM heading_counts
 WHERE url_id = ?
-ORDER BY id
 `
 
-func (q *Queries) GetHeadingCountsByURL(ctx context.Context, urlID int64) ([]HeadingCount, error) {
-	rows, err := q.db.QueryContext(ctx, getHeadingCountsByURL, urlID)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	var items []HeadingCount
-	for rows.Next() {
-		var i HeadingCount
-		if err := rows.Scan(
-			&i.ID,
-			&i.UrlID,
-			&i.H1Count,
-			&i.H2Count,
-			&i.H3Count,
-			&i.H4Count,
-			&i.H5Count,
-			&i.H6Count,
-		); err != nil {
-			return nil, err
-		}
-		items = append(items, i)
-	}
-	if err := rows.Close(); err != nil {
-		return nil, err
-	}
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	return items, nil
+func (q *Queries) GetHeadingCountsByURL(ctx context.Context, urlID int64) (HeadingCount, error) {
+	row := q.db.QueryRowContext(ctx, getHeadingCountsByURL, urlID)
+	var i HeadingCount
+	err := row.Scan(
+		&i.ID,
+		&i.UrlID,
+		&i.H1Count,
+		&i.H2Count,
+		&i.H3Count,
+		&i.H4Count,
+		&i.H5Count,
+		&i.H6Count,
+	)
+	return i, err
 }
 
 const insertHeadingCount = `-- name: InsertHeadingCount :exec
