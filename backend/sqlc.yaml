@@ -11,3 +11,6 @@ sql:
         emit_prepared_queries: false
         emit_interface: false
         emit_exact_table_names: false
+        overrides:
+          - column: "urls.status"
+            go_type: "github.com/foyez/url-inspector/backend/internal/models.CrawlStatus"

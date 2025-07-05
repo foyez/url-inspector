@@ -1,6 +1,7 @@
 package crawler
 
 import (
+	"context"
 	"net/http"
 	"net/url"
 	"strings"
@@ -50,11 +51,12 @@ func isInternal(link string, hostname string) bool {
 	return url.Hostname() == hostname
 }
 
-func checkLinkStatus(link string) int {
-	rsp, err := http.Head(link)
+func checkLinkStatusWithContext(ctx context.Context, link string) int {
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, link, nil)
 	if err != nil {
 		return 0
 	}
+	rsp, err := http.DefaultClient.Do(req)
 	defer rsp.Body.Close()
 	return rsp.StatusCode
 }

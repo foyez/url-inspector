@@ -1,6 +1,7 @@
 package crawler
 
 import (
+	"context"
 	"fmt"
 	"io"
 	"net/http"
@@ -20,8 +21,13 @@ type CrawlerResult struct {
 	HasLoginForm  bool
 }
 
-func Crawl(targetURL string) (*CrawlerResult, error) {
-	rsp, err := http.Get(targetURL)
+func CrawlWithContext(ctx context.Context, targetURL string) (*CrawlerResult, error) {
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, targetURL, nil)
+	if err != nil {
+		return nil, fmt.Errorf("request error: %w", err)
+	}
+
+	rsp, err := http.DefaultClient.Do(req)
 	if err != nil {
 		return nil, fmt.Errorf("fetch error: %w", err)
 	}
@@ -43,12 +49,17 @@ func Crawl(targetURL string) (*CrawlerResult, error) {
 	if err != nil {
 		return nil, fmt.Errorf("read error: %w", err)
 	}
+	select {
+	case <-ctx.Done():
+		return nil, fmt.Errorf("crawl cancelled after reading body")
+	default:
+	}
 	htmlString := string(bodyBytes)
 
 	// Detect HTML version
 	result.HTMLVersion = detectHTMLVersion(htmlString)
 
-	// Parse with goquery
+	// Parse HTML with goquery
 	doc, err := goquery.NewDocumentFromReader(strings.NewReader(htmlString))
 	if err != nil {
 		return nil, fmt.Errorf("parse error: %w", err)
@@ -72,15 +83,21 @@ func Crawl(targetURL string) (*CrawlerResult, error) {
 		return nil, fmt.Errorf("failed to parse url: %w", err)
 	}
 
-	doc.Find("a[href]").Each(func(i int, s *goquery.Selection) {
+	doc.Find("a[href]").EachWithBreak(func(i int, s *goquery.Selection) bool {
+		select {
+		case <-ctx.Done():
+			return false
+		default:
+		}
+
 		href, exists := s.Attr("href")
 		if !exists || href == "" || strings.HasPrefix(href, "javascript:") {
-			return
+			return true
 		}
 
 		absURL := toAbsoluteURL(baseURL, href)
 		if absURL == "" {
-			return
+			return true
 		}
 
 		if isInternal(absURL, baseURL.Hostname()) {
@@ -88,11 +105,18 @@ func Crawl(targetURL string) (*CrawlerResult, error) {
 		} else {
 			result.ExternalLinks = append(result.ExternalLinks, absURL)
 		}
+		return true
 	})
 
 	// Check broken links
 	for _, link := range append(result.InternalLinks, result.ExternalLinks...) {
-		code := checkLinkStatus(link)
+		select {
+		case <-ctx.Done():
+			return nil, fmt.Errorf("crawl cancelled during link check")
+		default:
+		}
+
+		code := checkLinkStatusWithContext(ctx, link)
 		if code >= 400 {
 			result.BrokenLinks[link] = code
 		}
