@@ -2,7 +2,6 @@ package main
 
 import (
 	"database/sql"
-	"fmt"
 	"log"
 	"os"
 	"os/signal"
@@ -27,8 +26,6 @@ func main() {
 	runDBMigration(config.MigrationURL, config.DBSource)
 
 	// Connect to the database
-	fmt.Println(config.DBDriver)
-	fmt.Println(config.DBSource)
 	conn, err := sql.Open(config.DBDriver, config.DBSource)
 	if err != nil {
 		log.Fatal("❌ DB connection error: ", err)

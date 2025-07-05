@@ -74,6 +74,6 @@ fe_test:
 	cd client && npm run test
 
 .PHONY: \
+	up up_dev down down_dev sqlc \
 	create_migration migrateup migratedown \
-	up up_dev down down_dev \
 	fe_install fe_dev fe_build fe_test
