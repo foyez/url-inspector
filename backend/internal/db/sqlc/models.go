@@ -7,6 +7,8 @@ package db
 import (
 	"database/sql"
 	"time"
+
+	"github.com/foyez/url-inspector/backend/internal/models"
 )
 
 type BrokenLink struct {
@@ -16,17 +18,28 @@ type BrokenLink struct {
 	StatusCode int32  `json:"status_code"`
 }
 
+type HeadingCount struct {
+	ID      int64 `json:"id"`
+	UrlID   int64 `json:"url_id"`
+	H1Count int32 `json:"h1_count"`
+	H2Count int32 `json:"h2_count"`
+	H3Count int32 `json:"h3_count"`
+	H4Count int32 `json:"h4_count"`
+	H5Count int32 `json:"h5_count"`
+	H6Count int32 `json:"h6_count"`
+}
+
 type Url struct {
-	ID            int64          `json:"id"`
-	Url           string         `json:"url"`
-	Title         sql.NullString `json:"title"`
-	HtmlVersion   sql.NullString `json:"html_version"`
-	InternalLinks int32          `json:"internal_links"`
-	ExternalLinks int32          `json:"external_links"`
-	BrokenLinks   int32          `json:"broken_links"`
-	HasLoginForm  bool           `json:"has_login_form"`
+	ID            int64  `json:"id"`
+	Url           string `json:"url"`
+	Title         string `json:"title"`
+	HtmlVersion   string `json:"html_version"`
+	InternalLinks int32  `json:"internal_links"`
+	ExternalLinks int32  `json:"external_links"`
+	BrokenLinks   int32  `json:"broken_links"`
+	HasLoginForm  bool   `json:"has_login_form"`
 	// queued, running, done, error
-	Status    string       `json:"status"`
-	CreatedAt sql.NullTime `json:"created_at"`
-	UpdatedAt time.Time    `json:"updated_at"`
+	Status    models.CrawlStatus `json:"status"`
+	CreatedAt sql.NullTime       `json:"created_at"`
+	UpdatedAt time.Time          `json:"updated_at"`
 }

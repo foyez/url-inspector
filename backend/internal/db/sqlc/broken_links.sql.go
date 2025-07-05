@@ -7,36 +7,26 @@ package db
 
 import (
 	"context"
-	"database/sql"
 )
-
-const createBrokenLink = `-- name: CreateBrokenLink :execresult
-INSERT INTO broken_links (url_id, link, status_code)
-VALUES ($1, $2, $3)
-`
-
-func (q *Queries) CreateBrokenLink(ctx context.Context) (sql.Result, error) {
-	return q.db.ExecContext(ctx, createBrokenLink)
-}
 
 const deleteBrokenLinksByURL = `-- name: DeleteBrokenLinksByURL :exec
 DELETE FROM broken_links
-WHERE url_id = $1
+WHERE url_id = ?
 `
 
-func (q *Queries) DeleteBrokenLinksByURL(ctx context.Context) error {
-	_, err := q.db.ExecContext(ctx, deleteBrokenLinksByURL)
+func (q *Queries) DeleteBrokenLinksByURL(ctx context.Context, urlID int64) error {
+	_, err := q.db.ExecContext(ctx, deleteBrokenLinksByURL, urlID)
 	return err
 }
 
 const getBrokenLinksByURL = `-- name: GetBrokenLinksByURL :many
 SELECT id, url_id, link, status_code FROM broken_links
-WHERE url_id = $1
+WHERE url_id = ?
 ORDER BY id
 `
 
-func (q *Queries) GetBrokenLinksByURL(ctx context.Context) ([]BrokenLink, error) {
-	rows, err := q.db.QueryContext(ctx, getBrokenLinksByURL)
+func (q *Queries) GetBrokenLinksByURL(ctx context.Context, urlID int64) ([]BrokenLink, error) {
+	rows, err := q.db.QueryContext(ctx, getBrokenLinksByURL, urlID)
 	if err != nil {
 		return nil, err
 	}
@@ -61,4 +51,20 @@ func (q *Queries) GetBrokenLinksByURL(ctx context.Context) ([]BrokenLink, error)
 		return nil, err
 	}
 	return items, nil
+}
+
+const insertBrokenLink = `-- name: InsertBrokenLink :exec
+INSERT INTO broken_links (url_id, link, status_code)
+VALUES (?, ?, ?)
+`
+
+type InsertBrokenLinkParams struct {
+	UrlID      int64  `json:"url_id"`
+	Link       string `json:"link"`
+	StatusCode int32  `json:"status_code"`
+}
+
+func (q *Queries) InsertBrokenLink(ctx context.Context, arg InsertBrokenLinkParams) error {
+	_, err := q.db.ExecContext(ctx, insertBrokenLink, arg.UrlID, arg.Link, arg.StatusCode)
+	return err
 }

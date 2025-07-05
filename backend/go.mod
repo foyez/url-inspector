@@ -1,4 +1,4 @@
-module github.com/foyez/sykell-fs/server
+module github.com/foyez/url-inspector/backend
 
 go 1.23.1
 

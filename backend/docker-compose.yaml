@@ -9,18 +9,11 @@ services:
     environment:
       - GO_ENV=production
       - PORT=${PORT} # Pass the PORT variable to the container
-      - DB_DRIVER=${DB_DRIVER}
-      - DB_HOST=${DB_HOST}
-      - DB_PORT=${DB_PORT}
-      - DB_USER=${DB_USER}
-      - DB_PASSWORD=${DB_PASSWORD}
-      - DB_NAME=${DB_NAME}
-      - DB_SOURCE=${DB_SOURCE}
     depends_on:
       mysql:
         condition: service_healthy
   mysql:
-    image: mysql:9.3.0
+    image: mysql:8.4
     environment:
       - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
       - MYSQL_USER=${DB_USER}

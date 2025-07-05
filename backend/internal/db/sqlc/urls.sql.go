@@ -8,6 +8,8 @@ package db
 import (
 	"context"
 	"database/sql"
+
+	"github.com/foyez/url-inspector/backend/internal/models"
 )
 
 const createURL = `-- name: CreateURL :execresult
@@ -22,12 +24,56 @@ INSERT INTO urls (
   status
 )
 VALUES (
-  $1, $2, $3, $4, $5, $6, $7, $8
+  ?, ?, ?, ?, ?, ?, ?, ?
 )
 `
 
-func (q *Queries) CreateURL(ctx context.Context) (sql.Result, error) {
-	return q.db.ExecContext(ctx, createURL)
+type CreateURLParams struct {
+	Url           string             `json:"url"`
+	Title         string             `json:"title"`
+	HtmlVersion   string             `json:"html_version"`
+	InternalLinks int32              `json:"internal_links"`
+	ExternalLinks int32              `json:"external_links"`
+	BrokenLinks   int32              `json:"broken_links"`
+	HasLoginForm  bool               `json:"has_login_form"`
+	Status        models.CrawlStatus `json:"status"`
+}
+
+func (q *Queries) CreateURL(ctx context.Context, arg CreateURLParams) (sql.Result, error) {
+	return q.db.ExecContext(ctx, createURL,
+		arg.Url,
+		arg.Title,
+		arg.HtmlVersion,
+		arg.InternalLinks,
+		arg.ExternalLinks,
+		arg.BrokenLinks,
+		arg.HasLoginForm,
+		arg.Status,
+	)
+}
+
+const getURLByID = `-- name: GetURLByID :one
+SELECT id, url, title, html_version, internal_links, external_links, broken_links, has_login_form, status, created_at, updated_at FROM urls
+WHERE id = ? LIMIT 1
+`
+
+func (q *Queries) GetURLByID(ctx context.Context, id int64) (Url, error) {
+	row := q.db.QueryRowContext(ctx, getURLByID, id)
+	var i Url
+	err := row.Scan(
+		&i.ID,
+		&i.Url,
+		&i.Title,
+		&i.HtmlVersion,
+		&i.InternalLinks,
+		&i.ExternalLinks,
+		&i.BrokenLinks,
+		&i.HasLoginForm,
+		&i.Status,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
 }
 
 const listURLs = `-- name: ListURLs :many
@@ -67,4 +113,57 @@ func (q *Queries) ListURLs(ctx context.Context) ([]Url, error) {
 		return nil, err
 	}
 	return items, nil
+}
+
+const updateCrawlResult = `-- name: UpdateCrawlResult :exec
+UPDATE urls
+SET
+  title = ?,
+  html_version = ?,
+  internal_links = ?,
+  external_links = ?,
+  broken_links = ?,
+  has_login_form = ?,
+  status = ?
+WHERE id = ?
+`
+
+type UpdateCrawlResultParams struct {
+	Title         string             `json:"title"`
+	HtmlVersion   string             `json:"html_version"`
+	InternalLinks int32              `json:"internal_links"`
+	ExternalLinks int32              `json:"external_links"`
+	BrokenLinks   int32              `json:"broken_links"`
+	HasLoginForm  bool               `json:"has_login_form"`
+	Status        models.CrawlStatus `json:"status"`
+	ID            int64              `json:"id"`
+}
+
+func (q *Queries) UpdateCrawlResult(ctx context.Context, arg UpdateCrawlResultParams) error {
+	_, err := q.db.ExecContext(ctx, updateCrawlResult,
+		arg.Title,
+		arg.HtmlVersion,
+		arg.InternalLinks,
+		arg.ExternalLinks,
+		arg.BrokenLinks,
+		arg.HasLoginForm,
+		arg.Status,
+		arg.ID,
+	)
+	return err
+}
+
+const updateStatus = `-- name: UpdateStatus :exec
+UPDATE urls SET status = ?
+WHERE id = ?
+`
+
+type UpdateStatusParams struct {
+	Status models.CrawlStatus `json:"status"`
+	ID     int64              `json:"id"`
+}
+
+func (q *Queries) UpdateStatus(ctx context.Context, arg UpdateStatusParams) error {
+	_, err := q.db.ExecContext(ctx, updateStatus, arg.Status, arg.ID)
+	return err
 }

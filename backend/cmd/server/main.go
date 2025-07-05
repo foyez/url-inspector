@@ -7,8 +7,9 @@ import (
 	"os/signal"
 	"syscall"
 
-	"github.com/foyez/sykell-fs/server/internal/api"
-	"github.com/foyez/sykell-fs/server/internal/util"
+	"github.com/foyez/url-inspector/backend/internal/api"
+	db "github.com/foyez/url-inspector/backend/internal/db/sqlc"
+	"github.com/foyez/url-inspector/backend/internal/util"
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/golang-migrate/migrate/v4"
 	_ "github.com/golang-migrate/migrate/v4/database/mysql"
@@ -16,13 +17,6 @@ import (
 )
 
 func main() {
-	// Testing crawl
-	// result, err := crawler.Crawl("https://wincentdragonbyte.com/login")
-	// 	if err != nil {
-	// 		log.Fatal(err)
-	// 	}
-	// 	fmt.Printf("%+v\n", result)
-
 	// Load configuration
 	config, err := util.LoadConfig("./.env")
 	if err != nil {
@@ -40,7 +34,8 @@ func main() {
 	defer conn.Close()
 
 	// Start the API server
-	server := api.NewServer()
+	store := db.NewStore(conn)
+	server := api.NewServer(store)
 	err = server.Start(config.ServerAddress)
 	if err != nil {
 		log.Fatal("cannot start server: ", err)

@@ -34,7 +34,7 @@ RUN CGO_ENABLED=0 GOOS=linux go build -ldflags="-s -w" -o main ./cmd/server
 FROM alpine:3.19 AS prod
 ENV ENVIRONMENT=production
 WORKDIR /app
-COPY --from=build --chown=appuser:appgroup /app/db/migration ./internal/db/migration
+COPY --from=build --chown=appuser:appgroup /app/internal/db/migrations ./internal/db/migrations
 COPY --from=build --chown=appuser:appgroup /app/main .
 COPY .env .
 # create custom user and group

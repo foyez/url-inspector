@@ -1,17 +1,21 @@
 package api
 
 import (
+	db "github.com/foyez/url-inspector/backend/internal/db/sqlc"
 	"github.com/gin-gonic/gin"
 )
 
 // server serves HTTP requests.
 type Server struct {
 	router *gin.Engine
+	store  *db.Store
 }
 
 // NewServer creates a new HTTP server and setup routing.
-func NewServer() *Server {
-	server := &Server{}
+func NewServer(store *db.Store) *Server {
+	server := &Server{
+		store: store,
+	}
 
 	server.setupRouter()
 
