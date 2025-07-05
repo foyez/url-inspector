@@ -9,6 +9,16 @@ import (
 	"context"
 )
 
+const deleteHeadingCountsByURL = `-- name: DeleteHeadingCountsByURL :exec
+DELETE FROM heading_counts
+WHERE url_id = ?
+`
+
+func (q *Queries) DeleteHeadingCountsByURL(ctx context.Context, urlID int64) error {
+	_, err := q.db.ExecContext(ctx, deleteHeadingCountsByURL, urlID)
+	return err
+}
+
 const getHeadingCountsByURL = `-- name: GetHeadingCountsByURL :one
 SELECT id, url_id, h1_count, h2_count, h3_count, h4_count, h5_count, h6_count FROM heading_counts
 WHERE url_id = ?

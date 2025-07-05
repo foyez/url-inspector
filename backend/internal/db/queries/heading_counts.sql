@@ -12,3 +12,7 @@ INSERT INTO heading_counts (
 -- name: GetHeadingCountsByURL :one
 SELECT * FROM heading_counts
 WHERE url_id = ?;
+
+-- name: DeleteHeadingCountsByURL :exec
+DELETE FROM heading_counts
+WHERE url_id = ?;

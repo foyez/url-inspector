@@ -136,6 +136,24 @@ func (q *Queries) ListURLs(ctx context.Context) ([]Url, error) {
 	return items, nil
 }
 
+const resetURL = `-- name: ResetURL :exec
+UPDATE urls
+SET
+  title = '',
+  html_version = 'Unknown',
+  has_login_form = false,
+  internal_links = 0,
+  external_links = 0,
+  broken_links = 0,
+  status = 'queued'
+WHERE id = ?
+`
+
+func (q *Queries) ResetURL(ctx context.Context, id int64) error {
+	_, err := q.db.ExecContext(ctx, resetURL, id)
+	return err
+}
+
 const updateCrawlResult = `-- name: UpdateCrawlResult :exec
 UPDATE urls
 SET

@@ -48,6 +48,6 @@ ALTER TABLE `heading_counts` COMMENT = 'Stores number of heading tags by level';
 
 ALTER TABLE `broken_links` COMMENT = 'Stores broken (4xx/5xx) links found for a given URL';
 
-ALTER TABLE `broken_links` ADD FOREIGN KEY (`id`) REFERENCES `urls` (`id`) ON DELETE CASCADE;
+ALTER TABLE `broken_links` ADD FOREIGN KEY (`url_id`) REFERENCES `urls` (`id`) ON DELETE CASCADE;
 
 ALTER TABLE `heading_counts` ADD FOREIGN KEY (`url_id`) REFERENCES `urls` (`id`) ON DELETE CASCADE;

@@ -150,12 +150,12 @@ func (server *Server) getURLDetails(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, rsp)
 }
 
-type BulkDeleteURLsRequest struct {
+type BulkDeleteRequest struct {
 	URLIDs []int64 `json:"url_ids"`
 }
 
 func (server *Server) bulkDeleteURLs(ctx *gin.Context) {
-	var req BulkDeleteURLsRequest
+	var req BulkDeleteRequest
 	if err := ctx.ShouldBindJSON(&req); err != nil {
 		ctx.JSON(http.StatusBadRequest, errorResponse(err))
 		return
@@ -172,10 +172,48 @@ func (server *Server) bulkDeleteURLs(ctx *gin.Context) {
 		return
 	}
 
-	ctx.JSON(http.StatusOK, gin.H{"message": "URLs deleted"})
+	ctx.JSON(http.StatusNoContent, gin.H{"message": "URLs deleted"})
+}
+
+type BulkRerunRequest struct {
+	URLIDs []int64 `json:"url_ids"`
 }
 
 func (server *Server) bulkRerunURLs(ctx *gin.Context) {
-	// TODO: Reset status to queued and delete old results
-	ctx.JSON(http.StatusOK, gin.H{"message": "bulk rerun"})
+	var req BulkDeleteRequest
+	if err := ctx.ShouldBindJSON(&req); err != nil {
+		ctx.JSON(http.StatusBadRequest, errorResponse(err))
+		return
+	}
+
+	for _, id := range req.URLIDs {
+		// cancel if running
+		jobs.Cancel(id)
+
+		// Delete old data
+		err := server.store.DeleteBrokenLinksByURL(ctx, id)
+		if err != nil {
+			continue
+		}
+
+		err = server.store.DeleteHeadingCountsByURL(ctx, id)
+		if err != nil {
+			continue
+		}
+
+		// Reset URL metadata
+		err = server.store.ResetURL(ctx, id)
+		if err != nil {
+			continue
+		}
+
+		// Trigger recrawl
+		urlRow, err := server.store.GetURLByID(ctx, id)
+		if err != nil {
+			continue
+		}
+		jobs.StartCrawlJob(server.store, id, urlRow.Url)
+	}
+
+	ctx.JSON(http.StatusOK, gin.H{"message": "URLs queued for rerun"})
 }
