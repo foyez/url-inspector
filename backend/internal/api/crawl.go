@@ -125,6 +125,30 @@ func (server *Server) startCrawl(ctx *gin.Context) {
 }
 
 func (server *Server) stopCrawl(ctx *gin.Context) {
-	// TODO: Stop crawl job if running
-	ctx.JSON(http.StatusOK, gin.H{"message": "stop crawling"})
+	idStr := ctx.Param("id")
+	id, err := strconv.ParseInt(idStr, 10, 64)
+	if err != nil {
+		err := fmt.Errorf("invalid ID")
+		ctx.JSON(http.StatusBadRequest, errorResponse(err))
+		return
+	}
+
+	if !jobs.Exists(id) {
+		err := fmt.Errorf("no running crawl for this URL")
+		ctx.JSON(http.StatusNotFound, errorResponse(err))
+		return
+	}
+
+	jobs.Cancel(id)
+
+	_ = server.store.UpdateStatus(context.Background(), db.UpdateStatusParams{
+		ID:     id,
+		Status: models.StatusError,
+	})
+
+	ctx.JSON(http.StatusOK, gin.H{
+		"message": "Crawl stopped",
+		"status":  models.StatusError,
+		"id":      id,
+	})
 }

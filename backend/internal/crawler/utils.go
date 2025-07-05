@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"net/url"
 	"strings"
+	"time"
 )
 
 func detectHTMLVersion(html string) string {
@@ -56,7 +57,15 @@ func checkLinkStatusWithContext(ctx context.Context, link string) int {
 	if err != nil {
 		return 0
 	}
-	rsp, err := http.DefaultClient.Do(req)
+
+	client := &http.Client{
+		Timeout: 5 * time.Second,
+	}
+
+	rsp, err := client.Do(req)
+	if err != nil {
+		return 0
+	}
 	defer rsp.Body.Close()
 	return rsp.StatusCode
 }
