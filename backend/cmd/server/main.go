@@ -16,6 +16,13 @@ import (
 )
 
 func main() {
+	// Testing crawl
+	// result, err := crawler.Crawl("https://wincentdragonbyte.com/login")
+	// 	if err != nil {
+	// 		log.Fatal(err)
+	// 	}
+	// 	fmt.Printf("%+v\n", result)
+
 	// Load configuration
 	config, err := util.LoadConfig("./.env")
 	if err != nil {

@@ -3,6 +3,7 @@ module github.com/foyez/sykell-fs/server
 go 1.23.1
 
 require (
+	github.com/PuerkitoBio/goquery v1.10.3
 	github.com/gin-gonic/gin v1.10.1
 	github.com/go-sql-driver/mysql v1.5.0
 	github.com/golang-migrate/migrate/v4 v4.18.3
@@ -10,6 +11,7 @@ require (
 )
 
 require (
+	github.com/andybalholm/cascadia v1.3.3 // indirect
 	github.com/bytedance/sonic v1.13.3 // indirect
 	github.com/bytedance/sonic/loader v0.2.4 // indirect
 	github.com/cloudwego/base64x v0.1.5 // indirect
