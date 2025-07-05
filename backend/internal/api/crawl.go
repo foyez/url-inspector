@@ -2,7 +2,6 @@ package api
 
 import (
 	"context"
-	"fmt"
 	"net/http"
 	"strconv"
 
@@ -16,26 +15,24 @@ func (server *Server) startCrawl(ctx *gin.Context) {
 	idStr := ctx.Param("id")
 	id, err := strconv.ParseInt(idStr, 10, 64)
 	if err != nil {
-		err = fmt.Errorf("invalid ID")
-		ctx.JSON(http.StatusBadRequest, errorResponse(err))
+		Fail(ctx, http.StatusBadRequest, "invalid URL ID")
 		return
 	}
 
 	if jobs.Exists(id) {
-		err := fmt.Errorf("crawl already running")
-		ctx.JSON(http.StatusConflict, errorResponse(err))
+		Fail(ctx, http.StatusConflict, "crawl already running")
 		return
 	}
 
 	urlRow, err := server.store.GetURLByID(ctx, id)
 	if err != nil {
-		ctx.JSON(http.StatusNotFound, errorResponse(fmt.Errorf("RL not found")))
+		Fail(ctx, http.StatusNotFound, "URL not found")
 		return
 	}
 
 	jobs.StartCrawlJob(server.store, id, urlRow.Url)
 
-	ctx.JSON(http.StatusAccepted, gin.H{
+	Success(ctx, http.StatusAccepted, gin.H{
 		"message": "Crawl started",
 		"status":  models.StatusRunning,
 		"id":      id,
@@ -46,14 +43,12 @@ func (server *Server) stopCrawl(ctx *gin.Context) {
 	idStr := ctx.Param("id")
 	id, err := strconv.ParseInt(idStr, 10, 64)
 	if err != nil {
-		err := fmt.Errorf("invalid ID")
-		ctx.JSON(http.StatusBadRequest, errorResponse(err))
+		Fail(ctx, http.StatusBadRequest, "invalid ID")
 		return
 	}
 
 	if !jobs.Exists(id) {
-		err := fmt.Errorf("no running crawl for this URL")
-		ctx.JSON(http.StatusNotFound, errorResponse(err))
+		Fail(ctx, http.StatusNotFound, "no running crawl for this URL")
 		return
 	}
 
@@ -64,7 +59,7 @@ func (server *Server) stopCrawl(ctx *gin.Context) {
 		Status: models.StatusError,
 	})
 
-	ctx.JSON(http.StatusOK, gin.H{
+	Success(ctx, http.StatusOK, gin.H{
 		"message": "Crawl stopped",
 		"status":  models.StatusError,
 		"id":      id,

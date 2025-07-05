@@ -1,8 +1,6 @@
 package api
 
 import (
-	"fmt"
-	"log"
 	"net/http"
 	"strconv"
 
@@ -19,7 +17,7 @@ type createURLRequest struct {
 func (server *Server) createURL(ctx *gin.Context) {
 	var req createURLRequest
 	if err := ctx.ShouldBindJSON(&req); err != nil {
-		ctx.JSON(http.StatusBadRequest, errorResponse(err))
+		Fail(ctx, http.StatusBadRequest, "invalid or empty url")
 		return
 	}
 
@@ -36,34 +34,33 @@ func (server *Server) createURL(ctx *gin.Context) {
 
 	res, err := server.store.CreateURL(ctx, arg)
 	if err != nil {
-		log.Println("error")
-		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		Fail(ctx, http.StatusInternalServerError, "failed to create URL")
 		return
 	}
 
 	id, err := res.LastInsertId()
 	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		Fail(ctx, http.StatusInternalServerError, "failed to create URL")
 		return
 	}
 
 	urlData, err := server.store.GetURLByID(ctx, id)
 	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		Fail(ctx, http.StatusInternalServerError, "failed to create URL")
 		return
 	}
 
-	ctx.JSON(http.StatusCreated, urlData)
+	Success(ctx, http.StatusCreated, urlData)
 }
 
 func (server *Server) listURLs(ctx *gin.Context) {
 	rsp, err := server.store.ListURLs(ctx)
 	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		Fail(ctx, http.StatusInternalServerError, "failed to fetch URL list")
 		return
 	}
 
-	ctx.JSON(http.StatusOK, rsp)
+	Success(ctx, http.StatusOK, rsp)
 }
 
 type URLDetailsResponse struct {
@@ -95,29 +92,25 @@ func (server *Server) getURLDetails(ctx *gin.Context) {
 	idStr := ctx.Param("id")
 	id, err := strconv.ParseInt(idStr, 10, 64)
 	if err != nil {
-		err := fmt.Errorf("invalid ID")
-		ctx.JSON(http.StatusBadRequest, errorResponse(err))
+		Fail(ctx, http.StatusBadRequest, "invalid ID")
 		return
 	}
 
 	urlData, err := server.store.GetURLByID(ctx, id)
 	if err != nil {
-		err := fmt.Errorf("URL not found")
-		ctx.JSON(http.StatusNotFound, errorResponse(err))
+		Fail(ctx, http.StatusNotFound, "URL not found")
 		return
 	}
 
 	headings, err := server.store.GetHeadingCountsByURL(ctx, id)
 	if err != nil {
-		err := fmt.Errorf("failed to fetch heading counts")
-		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		Fail(ctx, http.StatusInternalServerError, "failed to fetch heading counts")
 		return
 	}
 
 	brokenLinksDB, err := server.store.GetBrokenLinksByURL(ctx, id)
 	if err != nil {
-		err := fmt.Errorf("failed to fetch broken links")
-		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		Fail(ctx, http.StatusInternalServerError, "failed to fetch broken links")
 		return
 	}
 
@@ -147,7 +140,7 @@ func (server *Server) getURLDetails(ctx *gin.Context) {
 		BrokenLinks: brokenLinks,
 	}
 
-	ctx.JSON(http.StatusOK, rsp)
+	Success(ctx, http.StatusOK, rsp)
 }
 
 type BulkDeleteRequest struct {
@@ -157,7 +150,7 @@ type BulkDeleteRequest struct {
 func (server *Server) bulkDeleteURLs(ctx *gin.Context) {
 	var req BulkDeleteRequest
 	if err := ctx.ShouldBindJSON(&req); err != nil {
-		ctx.JSON(http.StatusBadRequest, errorResponse(err))
+		Fail(ctx, http.StatusBadRequest, "invalid or empty url_ids")
 		return
 	}
 
@@ -168,11 +161,11 @@ func (server *Server) bulkDeleteURLs(ctx *gin.Context) {
 
 	err := server.store.DeleteURLs(ctx, req.URLIDs)
 	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, errorResponse(fmt.Errorf("failed to delete records")))
+		Fail(ctx, http.StatusInternalServerError, "failed to delete records")
 		return
 	}
 
-	ctx.JSON(http.StatusNoContent, gin.H{"message": "URLs deleted"})
+	Success(ctx, http.StatusNoContent, gin.H{"message": "URLs deleted"})
 }
 
 type BulkRerunRequest struct {
@@ -182,7 +175,7 @@ type BulkRerunRequest struct {
 func (server *Server) bulkRerunURLs(ctx *gin.Context) {
 	var req BulkDeleteRequest
 	if err := ctx.ShouldBindJSON(&req); err != nil {
-		ctx.JSON(http.StatusBadRequest, errorResponse(err))
+		Fail(ctx, http.StatusBadRequest, "invalid or empty url_ids")
 		return
 	}
 
@@ -215,5 +208,5 @@ func (server *Server) bulkRerunURLs(ctx *gin.Context) {
 		jobs.StartCrawlJob(server.store, id, urlRow.Url)
 	}
 
-	ctx.JSON(http.StatusOK, gin.H{"message": "URLs queued for rerun"})
+	Success(ctx, http.StatusOK, gin.H{"message": "URLs queued for rerun"})
 }

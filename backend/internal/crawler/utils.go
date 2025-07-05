@@ -58,6 +58,8 @@ func checkLinkStatusWithContext(ctx context.Context, link string) int {
 		return 0
 	}
 
+	// TODO: bot protection issue: Linkedin, Leetcode
+
 	client := &http.Client{
 		Timeout: 5 * time.Second,
 	}
@@ -67,5 +69,6 @@ func checkLinkStatusWithContext(ctx context.Context, link string) int {
 		return 0
 	}
 	defer rsp.Body.Close()
+
 	return rsp.StatusCode
 }
