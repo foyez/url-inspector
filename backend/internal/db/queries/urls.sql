@@ -35,3 +35,7 @@ SET
   has_login_form = ?,
   status = ?
 WHERE id = ?;
+
+-- name: DeleteURLs :exec
+DELETE FROM urls
+WHERE id IN (sqlc.slice('ids'));

@@ -8,6 +8,7 @@ package db
 import (
 	"context"
 	"database/sql"
+	"strings"
 
 	"github.com/foyez/url-inspector/backend/internal/models"
 )
@@ -50,6 +51,26 @@ func (q *Queries) CreateURL(ctx context.Context, arg CreateURLParams) (sql.Resul
 		arg.HasLoginForm,
 		arg.Status,
 	)
+}
+
+const deleteURLs = `-- name: DeleteURLs :exec
+DELETE FROM urls
+WHERE id IN (/*SLICE:ids*/?)
+`
+
+func (q *Queries) DeleteURLs(ctx context.Context, ids []int64) error {
+	query := deleteURLs
+	var queryParams []interface{}
+	if len(ids) > 0 {
+		for _, v := range ids {
+			queryParams = append(queryParams, v)
+		}
+		query = strings.Replace(query, "/*SLICE:ids*/?", strings.Repeat(",?", len(ids))[1:], 1)
+	} else {
+		query = strings.Replace(query, "/*SLICE:ids*/?", "NULL", 1)
+	}
+	_, err := q.db.ExecContext(ctx, query, queryParams...)
+	return err
 }
 
 const getURLByID = `-- name: GetURLByID :one

@@ -7,6 +7,7 @@ import (
 	"strconv"
 
 	db "github.com/foyez/url-inspector/backend/internal/db/sqlc"
+	"github.com/foyez/url-inspector/backend/internal/jobs"
 	"github.com/foyez/url-inspector/backend/internal/models"
 	"github.com/gin-gonic/gin"
 )
@@ -149,9 +150,29 @@ func (server *Server) getURLDetails(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, rsp)
 }
 
+type BulkDeleteURLsRequest struct {
+	URLIDs []int64 `json:"url_ids"`
+}
+
 func (server *Server) bulkDeleteURLs(ctx *gin.Context) {
-	// TODO: Delete multiple URLs + associated broken links
-	ctx.JSON(http.StatusOK, gin.H{"message": "bulk delete"})
+	var req BulkDeleteURLsRequest
+	if err := ctx.ShouldBindJSON(&req); err != nil {
+		ctx.JSON(http.StatusBadRequest, errorResponse(err))
+		return
+	}
+
+	// stop running jobs before deletion
+	for _, id := range req.URLIDs {
+		jobs.Cancel(id)
+	}
+
+	err := server.store.DeleteURLs(ctx, req.URLIDs)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, errorResponse(fmt.Errorf("failed to delete records")))
+		return
+	}
+
+	ctx.JSON(http.StatusOK, gin.H{"message": "URLs deleted"})
 }
 
 func (server *Server) bulkRerunURLs(ctx *gin.Context) {
