@@ -2,6 +2,7 @@ package api
 
 import (
 	db "github.com/foyez/url-inspector/backend/internal/db/sqlc"
+	"github.com/foyez/url-inspector/backend/internal/util"
 	"github.com/gin-gonic/gin"
 )
 
@@ -9,24 +10,27 @@ import (
 type Server struct {
 	router *gin.Engine
 	store  *db.Store
+	config util.Config
 }
 
 // NewServer creates a new HTTP server and setup routing.
-func NewServer(store *db.Store) *Server {
+func NewServer(config util.Config, store *db.Store) *Server {
 	server := &Server{
-		store: store,
+		store:  store,
+		config: config,
 	}
 
-	server.setupRouter()
+	server.setupRouter(config)
 
 	return server
 }
 
 // setupRouter setups the routers
-func (server *Server) setupRouter() {
+func (server *Server) setupRouter(config util.Config) {
 	router := gin.Default()
 
 	urls := router.Group("/api/urls")
+	urls.Use(authMiddleware(config)) // apply auth
 	{
 		urls.POST("/", server.createURL)
 		urls.GET("/", server.listURLs)

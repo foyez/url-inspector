@@ -25,3 +25,11 @@ func Fail(ctx *gin.Context, status int, msg string) {
 		Error:   msg,
 	})
 }
+
+// 4xx / 5xx
+func FailWithAbort(ctx *gin.Context, status int, msg string) {
+	ctx.AbortWithStatusJSON(status, APIResponse{
+		Success: false,
+		Error:   msg,
+	})
+}

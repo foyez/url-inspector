@@ -8,6 +8,7 @@ type Config struct {
 	DBSource      string `mapstructure:"DB_SOURCE"`
 	MigrationURL  string `mapstructure:"MIGRATION_URL"`
 	ServerAddress string `mapstructure:"SERVER_ADDRESS"`
+	APIToken      string `mapstructure:"API_TOKEN"`
 }
 
 // LoadConfig reads configuration from file or environment variables.
