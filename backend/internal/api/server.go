@@ -1,8 +1,13 @@
 package api
 
 import (
+	"fmt"
+	"net/http"
+	"time"
+
 	db "github.com/foyez/url-inspector/backend/internal/db/sqlc"
 	"github.com/foyez/url-inspector/backend/internal/util"
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 )
 
@@ -28,6 +33,31 @@ func NewServer(config util.Config, store *db.Store) *Server {
 // setupRouter setups the routers
 func (server *Server) setupRouter(config util.Config) {
 	router := gin.Default()
+
+	router.Use(func(c *gin.Context) {
+		fmt.Println("Incoming Origin:", c.Request.Header.Get("Origin"))
+		c.Next()
+	})
+
+	// CORS
+	router.Use(cors.New(cors.Config{
+		AllowOrigins: config.AllowedOrigins,
+		AllowMethods: []string{
+			http.MethodHead,
+			http.MethodOptions,
+			http.MethodGet,
+			http.MethodPost,
+			http.MethodPut,
+			http.MethodPatch,
+			http.MethodDelete,
+		},
+		AllowHeaders: []string{
+			"Content-Type",
+			"Authorization",
+		},
+		AllowCredentials: true,
+		MaxAge:           12 * time.Hour,
+	}))
 
 	urls := router.Group("/api/urls")
 	urls.Use(authMiddleware(config)) // apply auth

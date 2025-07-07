@@ -59,6 +59,9 @@ func (server *Server) listURLs(ctx *gin.Context) {
 		Fail(ctx, http.StatusInternalServerError, "failed to fetch URL list")
 		return
 	}
+	if rsp == nil {
+		rsp = []db.Url{}
+	}
 
 	Success(ctx, http.StatusOK, rsp)
 }
