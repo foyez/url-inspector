@@ -98,11 +98,41 @@ func (q *Queries) GetURLByID(ctx context.Context, id int64) (Url, error) {
 }
 
 const listURLs = `-- name: ListURLs :many
-SELECT id, url, title, html_version, internal_links, external_links, broken_links, has_login_form, status, created_at, updated_at FROM urls ORDER BY created_at DESC
+SELECT id, url, title, html_version, internal_links, external_links, broken_links, has_login_form, status, created_at, updated_at FROM urls
+WHERE 
+  (title LIKE CONCAT('%', ?, '%') OR ? = '')
+ORDER BY
+  CASE
+    WHEN ? = 'title' THEN title
+    WHEN ? = 'html_version' THEN html_version
+    WHEN ? = 'status' THEN status
+    WHEN ? = 'internal_links' THEN CAST(internal_links AS CHAR)
+    WHEN ? = 'external_links' THEN CAST(external_links AS CHAR)
+    ELSE created_at
+  END
+DESC
+LIMIT ? OFFSET ?
 `
 
-func (q *Queries) ListURLs(ctx context.Context) ([]Url, error) {
-	rows, err := q.db.QueryContext(ctx, listURLs)
+type ListURLsParams struct {
+	Search interface{} `json:"search"`
+	SortBy interface{} `json:"sort_by"`
+	Limit  int32       `json:"limit"`
+	Offset int32       `json:"offset"`
+}
+
+func (q *Queries) ListURLs(ctx context.Context, arg ListURLsParams) ([]Url, error) {
+	rows, err := q.db.QueryContext(ctx, listURLs,
+		arg.Search,
+		arg.Search,
+		arg.SortBy,
+		arg.SortBy,
+		arg.SortBy,
+		arg.SortBy,
+		arg.SortBy,
+		arg.Limit,
+		arg.Offset,
+	)
 	if err != nil {
 		return nil, err
 	}

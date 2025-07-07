@@ -1,7 +1,6 @@
 package api
 
 import (
-	"fmt"
 	"net/http"
 	"time"
 
@@ -33,11 +32,6 @@ func NewServer(config util.Config, store *db.Store) *Server {
 // setupRouter setups the routers
 func (server *Server) setupRouter(config util.Config) {
 	router := gin.Default()
-
-	router.Use(func(c *gin.Context) {
-		fmt.Println("Incoming Origin:", c.Request.Header.Get("Origin"))
-		c.Next()
-	})
 
 	// CORS
 	router.Use(cors.New(cors.Config{

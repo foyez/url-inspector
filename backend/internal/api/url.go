@@ -58,8 +58,51 @@ func (server *Server) createURL(ctx *gin.Context) {
 	Success(ctx, http.StatusCreated, urlData)
 }
 
+type listURLsQuery struct {
+	Page     int    `form:"page"`
+	PageSize int    `form:"page_size"`
+	SortBy   string `form:"sort_by"`
+	Search   string `form:"search"`
+}
+
 func (server *Server) listURLs(ctx *gin.Context) {
-	rsp, err := server.store.ListURLs(ctx)
+	var q listURLsQuery
+	if err := ctx.ShouldBindQuery(&q); err != nil {
+		Fail(ctx, http.StatusBadRequest, "invalid query params")
+		return
+	}
+
+	if q.Page <= 0 {
+		q.Page = 1
+	}
+	if q.PageSize <= 0 {
+		q.PageSize = 10
+	}
+	if q.Search == "" {
+		q.Search = ""
+	}
+	offset := (q.Page - 1) * q.PageSize
+
+	// Whitelist sortable columns
+	validSortFields := map[string]string{
+		"title":          "title",
+		"html_version":   "html_version",
+		"internal_links": "internal_links",
+		"external_links": "external_links",
+		"status":         "status",
+		"created_at":     "created_at",
+	}
+	sortBy := "created_at" // default
+	if col, ok := validSortFields[q.SortBy]; ok {
+		sortBy = col
+	}
+
+	rsp, err := server.store.ListURLs(ctx, db.ListURLsParams{
+		Search: q.Search,
+		SortBy: sortBy,
+		Limit:  int32(q.PageSize),
+		Offset: int32(offset),
+	})
 	if err != nil {
 		Fail(ctx, http.StatusInternalServerError, "failed to fetch URL list")
 		return
