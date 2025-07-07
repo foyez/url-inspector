@@ -58,7 +58,7 @@ func checkLinkStatusWithContext(ctx context.Context, link string) int {
 		return 0
 	}
 
-	// TODO: bot protection issue: Linkedin, Leetcode
+	// TODO: bot protection issue: Linkedin, Leetcode, etc.
 
 	client := &http.Client{
 		Timeout: 5 * time.Second,

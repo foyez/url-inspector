@@ -34,6 +34,11 @@ func (server *Server) createURL(ctx *gin.Context) {
 
 	res, err := server.store.CreateURL(ctx, arg)
 	if err != nil {
+		// Check if it's a duplicate key error
+		if db.ErrorCode(err) == db.UniqueViolation {
+			Fail(ctx, http.StatusConflict, "url already exists")
+			return
+		}
 		Fail(ctx, http.StatusInternalServerError, "failed to create URL")
 		return
 	}
@@ -168,7 +173,7 @@ func (server *Server) bulkDeleteURLs(ctx *gin.Context) {
 		return
 	}
 
-	Success(ctx, http.StatusNoContent, gin.H{"message": "URLs deleted"})
+	Success(ctx, http.StatusOK, gin.H{"message": "URLs deleted"})
 }
 
 type BulkRerunRequest struct {
