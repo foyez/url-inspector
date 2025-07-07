@@ -14,7 +14,7 @@ client.interceptors.request.use((config) => {
 });
 
 client.interceptors.response.use(
-  (response) => response,
+  (res) => res,
   (err) => {
     const msg = err.response?.data?.error || err.message || "Unknown error";
     return Promise.reject(new Error(msg));
