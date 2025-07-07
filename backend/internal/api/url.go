@@ -62,6 +62,7 @@ type listURLsQuery struct {
 	Page     int    `form:"page"`
 	PageSize int    `form:"page_size"`
 	SortBy   string `form:"sort_by"`
+	SortDir  string `form:"sort_dir"`
 	Search   string `form:"search"`
 }
 
@@ -83,21 +84,32 @@ func (server *Server) listURLs(ctx *gin.Context) {
 	}
 	offset := (q.Page - 1) * q.PageSize
 
-	rsp, err := server.store.ListURLs(ctx, db.ListURLsParams{
-		Search: q.Search,
-		SortBy: q.SortBy,
-		Limit:  int32(q.PageSize),
-		Offset: int32(offset),
+	urls, err := server.store.ListURLs(ctx, db.ListURLsParams{
+		Search:  q.Search,
+		SortBy:  q.SortBy,
+		SortDir: q.SortDir,
+		Limit:   int32(q.PageSize),
+		Offset:  int32(offset),
 	})
 	if err != nil {
 		Fail(ctx, http.StatusInternalServerError, "failed to fetch URL list")
 		return
 	}
-	if rsp == nil {
-		rsp = []db.Url{}
+
+	total, err := server.store.CountURLs(ctx, q.Search)
+	if err != nil {
+		Fail(ctx, http.StatusInternalServerError, "failed to count URLs")
+		return
 	}
 
-	Success(ctx, http.StatusOK, rsp)
+	if urls == nil {
+		urls = []db.Url{}
+	}
+
+	Success(ctx, http.StatusOK, gin.H{
+		"urls":  urls,
+		"total": total,
+	})
 }
 
 type URLDetailsResponse struct {

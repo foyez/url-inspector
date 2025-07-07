@@ -1,5 +1,7 @@
 export type Status = "queued" | "running" | "done" | "error";
 
+export type SortDir = "asc" | "desc";
+
 export type URLData = {
   id: number;
   title: string;
@@ -7,6 +9,7 @@ export type URLData = {
   has_login_form: boolean;
   internal_links: number;
   external_links: number;
+  broken_links: number;
   status: Status;
   created_at: string;
 };
@@ -26,5 +29,5 @@ export type URLDetails = {
     h5: number;
     h6: number;
   };
-  broken_links: { link: string; status: number }[];
+  broken_links: { link: string; statusCode: number }[];
 };

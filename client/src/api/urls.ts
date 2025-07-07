@@ -1,11 +1,28 @@
-import type { URLData, URLDetails } from "@/types";
-import type { ApiResponse, CrawlResponse } from "@/types/api";
+import type { URLDetails } from "@/types";
+import type {
+  ApiResponse,
+  CrawlResponse,
+  ListURLsOptions,
+  ListURLsResponse,
+} from "@/types/api";
 import client from "./client";
 
-export const fetchURLs = async (): Promise<URLData[]> => {
-  const res = await client.get<ApiResponse<URLData[]>>("/urls/", {
-    timeout: 5000,
-  });
+export const fetchURLs = async (
+  options: ListURLsOptions = {}
+): Promise<ListURLsResponse> => {
+  const params = new URLSearchParams();
+  if (options.page) params.append("page", options.page.toString());
+  if (options.pageSize) params.append("page_size", options.pageSize.toString());
+  if (options.sortBy) params.append("sort_by", options.sortBy);
+  if (options.sortDir) params.append("sort_dir", options.sortDir);
+  if (options.search) params.append("search", options.search);
+
+  const res = await client.get<ApiResponse<ListURLsResponse>>(
+    `/urls/?${params}`,
+    {
+      timeout: 5000,
+    }
+  );
   if (!res.data.success) {
     throw new Error(res.data.error || "Failed to fetch URLs");
   }

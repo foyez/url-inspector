@@ -1,4 +1,4 @@
-import type { Status } from ".";
+import type { SortDir, Status, URLData } from ".";
 
 export type ApiResponse<T> = {
   success: boolean;
@@ -10,4 +10,17 @@ export type CrawlResponse = {
   id: number;
   message: string;
   status: Status;
+};
+
+export type ListURLsOptions = {
+  page?: number;
+  pageSize?: number;
+  sortBy?: string;
+  sortDir?: SortDir;
+  search?: string;
+};
+
+export type ListURLsResponse = {
+  urls: URLData[];
+  total: number;
 };

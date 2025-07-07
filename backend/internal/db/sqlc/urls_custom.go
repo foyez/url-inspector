@@ -1,40 +1,63 @@
 package db
 
-import "context"
+import (
+	"context"
+	"fmt"
+	"strings"
+)
 
-const listURLs = `-- name: ListURLs :many
-SELECT id, url, title, html_version, internal_links, external_links, broken_links, has_login_form, status, created_at, updated_at FROM urls
-WHERE 
-  (? = '' OR MATCH(title) AGAINST (? IN NATURAL LANGUAGE MODE))
-ORDER BY
-  CASE
-    WHEN ? = 'title' THEN title
-    WHEN ? = 'html_version' THEN html_version
-    WHEN ? = 'status' THEN status
-    WHEN ? = 'internal_links' THEN CAST(internal_links AS CHAR)
-    WHEN ? = 'external_links' THEN CAST(external_links AS CHAR)
-    ELSE created_at
-  END
-DESC
-LIMIT ? OFFSET ?
-`
+var allowedOrderBy = map[string]bool{
+	"title":          true,
+	"html_version":   true,
+	"status":         true,
+	"internal_links": true,
+	"external_links": true,
+	"broken_links":   true,
+	"created_at":     true,
+}
+
+// Sort direction validation
+func isValidSortDir(dir string) bool {
+	return dir == "ASC" || dir == "DESC"
+}
 
 type ListURLsParams struct {
-	Search string `json:"search"`
-	SortBy string `json:"sort_by"`
-	Limit  int32  `json:"limit"`
-	Offset int32  `json:"offset"`
+	Search  string `json:"search"`
+	SortBy  string `json:"sort_by"`
+	SortDir string `json:"sort_dir"`
+	Limit   int32  `json:"limit"`
+	Offset  int32  `json:"offset"`
 }
 
 func (q *Queries) ListURLs(ctx context.Context, arg ListURLsParams) ([]Url, error) {
+	// Validate column
+	if !allowedOrderBy[arg.SortBy] {
+		arg.SortBy = "created_at"
+	}
+
+	// Validate direction
+	arg.SortDir = strings.ToUpper(arg.SortDir)
+	if !isValidSortDir(arg.SortDir) {
+		arg.SortDir = "DESC"
+	}
+
+	// Build dynamic query string
+	listURLs := fmt.Sprintf(`
+		SELECT id, url, title, html_version, internal_links, external_links, broken_links, has_login_form, status, created_at, updated_at FROM urls
+		WHERE 
+			(
+				? = '' OR 
+				MATCH(title) AGAINST (? IN NATURAL LANGUAGE MODE) OR
+				title LIKE CONCAT('%%', ?, '%%')
+			)
+		ORDER BY %s %s
+		LIMIT ? OFFSET ?
+		`, arg.SortBy, arg.SortDir)
+
 	rows, err := q.db.QueryContext(ctx, listURLs,
 		arg.Search,
 		arg.Search,
-		arg.SortBy,
-		arg.SortBy,
-		arg.SortBy,
-		arg.SortBy,
-		arg.SortBy,
+		arg.Search,
 		arg.Limit,
 		arg.Offset,
 	)
@@ -69,4 +92,15 @@ func (q *Queries) ListURLs(ctx context.Context, arg ListURLsParams) ([]Url, erro
 		return nil, err
 	}
 	return urls, nil
+}
+
+const countURLs = `-- name: CountURLs :one
+SELECT COUNT(*) FROM urls WHERE (? = '' OR MATCH(title) AGAINST (? IN NATURAL LANGUAGE MODE) OR title LIKE CONCAT('%', ?, '%'))
+`
+
+func (q *Queries) CountURLs(ctx context.Context, search string) (int64, error) {
+	row := q.db.QueryRowContext(ctx, countURLs, search, search, search)
+	var count int64
+	err := row.Scan(&count)
+	return count, err
 }

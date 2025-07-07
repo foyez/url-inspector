@@ -1,4 +1,4 @@
-import type { URLData } from "@/types";
+import type { SortDir, URLData } from "@/types";
 import { Link } from "react-router-dom";
 import StatusBadge from "./StatusBadge";
 import { startCrawl, stopCrawl } from "@/api/urls";
@@ -14,6 +14,12 @@ type URLTableProps = {
   onRerun: () => void;
   loading: boolean;
   updateURLs: (modifier: (prev: URLData[]) => URLData[]) => void;
+  sortBy: string;
+  sortDir: SortDir;
+  setSortBy: (col: string) => void;
+  page: number;
+  setPage: (page: number) => void;
+  total: number;
 };
 
 function URLTable({
@@ -26,6 +32,12 @@ function URLTable({
   onRerun,
   loading,
   updateURLs,
+  sortBy,
+  sortDir,
+  setSortBy,
+  page,
+  setPage,
+  total,
 }: URLTableProps) {
   const allSelected = urls.length > 0 && selected.length === urls.length;
 
@@ -89,12 +101,47 @@ function URLTable({
                 checked={allSelected}
               />
             </th>
-            <th className="p-2 text-left">Title</th>
-            <th className="p-2">HTML Version</th>
+            <th
+              className="cursor-pointer p-2 text-left"
+              onClick={() => setSortBy("title")}
+            >
+              Title {sortBy === "title" && (sortDir === "asc" ? " ▲" : " ▼")}
+            </th>
+            <th
+              className="cursor-pointer p-2"
+              onClick={() => setSortBy("html_version")}
+            >
+              HTML Version{" "}
+              {sortBy === "html_version" && (sortDir === "asc" ? " ▲" : " ▼")}
+            </th>
             <th className="p-2">Login</th>
-            <th className="p-2">Internal</th>
-            <th className="p-2">External</th>
-            <th className="p-2">Status</th>
+            <th
+              className="cursor-pointer p-2"
+              onClick={() => setSortBy("internal_links")}
+            >
+              Internal{" "}
+              {sortBy === "internal_links" && (sortDir === "asc" ? " ▲" : " ▼")}
+            </th>
+            <th
+              className="cursor-pointer p-2"
+              onClick={() => setSortBy("external_links")}
+            >
+              External{" "}
+              {sortBy === "external_links" && (sortDir === "asc" ? " ▲" : " ▼")}
+            </th>
+            <th
+              className="cursor-pointer p-2"
+              onClick={() => setSortBy("broken_links")}
+            >
+              Broken{" "}
+              {sortBy === "broken_links" && (sortDir === "asc" ? " ▲" : " ▼")}
+            </th>
+            <th
+              className="cursor-pointer p-2"
+              onClick={() => setSortBy("status")}
+            >
+              Status {sortBy === "status" && (sortDir === "asc" ? " ▲" : " ▼")}
+            </th>
             <th className="p-2 text-left">Action</th>
           </tr>
         </thead>
@@ -119,6 +166,7 @@ function URLTable({
               </td>
               <td className="p-2 text-center">{url.internal_links}</td>
               <td className="p-2 text-center">{url.external_links}</td>
+              <td className="p-2 text-center">{url.broken_links}</td>
               <td className="p-2 text-center">
                 <StatusBadge status={url.status} />
               </td>
@@ -143,6 +191,7 @@ function URLTable({
           ))}
         </tbody>
       </table>
+
       {selected.length > 0 && (
         <div className="flex justify-end p-2 gap-2 bg-gray-50 border-t">
           <button
@@ -159,6 +208,29 @@ function URLTable({
           </button>
         </div>
       )}
+
+      <div className="flex justify-between items-center px-4 py-2 text-sm bg-gray-50 border-t">
+        <div>
+          Showing {urls.length} of {total} result{urls.length !== 1 && "s"}
+        </div>
+        <div className="flex gap-2">
+          <button
+            onClick={() => setPage(Math.max(1, page - 1))}
+            disabled={page === 1}
+            className="cursor-pointer px-3 py-1 border rounded disabled:opacity-50"
+          >
+            Prev
+          </button>
+          <span className="px-2 self-center">Page {page}</span>
+          <button
+            onClick={() => setPage(page + 1)}
+            disabled={page * import.meta.env.VITE_PAGE_SIZE >= total}
+            className="cursor-pointer px-3 py-1 border rounded disabled:opacity-50"
+          >
+            Next
+          </button>
+        </div>
+      </div>
     </div>
   );
 }
