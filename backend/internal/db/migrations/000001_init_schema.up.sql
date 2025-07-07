@@ -1,7 +1,7 @@
 CREATE TABLE `urls` (
   `id` bigint PRIMARY KEY AUTO_INCREMENT,
   `url` varchar(512) UNIQUE NOT NULL,
-  `title` varchar(255) NOT NULL,
+  `title` text NOT NULL,
   `html_version` varchar(50) NOT NULL,
   `internal_links` int NOT NULL DEFAULT 0,
   `external_links` int NOT NULL DEFAULT 0,
@@ -9,8 +9,10 @@ CREATE TABLE `urls` (
   `has_login_form` boolean NOT NULL DEFAULT false,
   `status` varchar(20) NOT NULL DEFAULT 'queued' COMMENT 'queued, running, done, error',
   `created_at` timestamp DEFAULT (CURRENT_TIMESTAMP),
-  `updated_at` timestamp DEFAULT (CURRENT_TIMESTAMP)
-);
+  `updated_at` timestamp DEFAULT (CURRENT_TIMESTAMP),
+
+  FULLTEXT(title)
+) ENGINE=InnoDB;
 
 -- Alter `updated_at` column to set `ON UPDATE CURRENT_TIMESTAMP`
 ALTER TABLE `urls`

@@ -83,23 +83,9 @@ func (server *Server) listURLs(ctx *gin.Context) {
 	}
 	offset := (q.Page - 1) * q.PageSize
 
-	// Whitelist sortable columns
-	validSortFields := map[string]string{
-		"title":          "title",
-		"html_version":   "html_version",
-		"internal_links": "internal_links",
-		"external_links": "external_links",
-		"status":         "status",
-		"created_at":     "created_at",
-	}
-	sortBy := "created_at" // default
-	if col, ok := validSortFields[q.SortBy]; ok {
-		sortBy = col
-	}
-
 	rsp, err := server.store.ListURLs(ctx, db.ListURLsParams{
 		Search: q.Search,
-		SortBy: sortBy,
+		SortBy: q.SortBy,
 		Limit:  int32(q.PageSize),
 		Offset: int32(offset),
 	})

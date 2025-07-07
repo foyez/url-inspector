@@ -17,23 +17,6 @@ VALUES (
 SELECT * FROM urls
 WHERE id = ? LIMIT 1;
 
--- name: ListURLs :many
-SELECT * FROM urls
-WHERE 
-  (title LIKE CONCAT('%', sqlc.arg(search), '%') OR sqlc.arg(search) = '')
-ORDER BY
-  CASE
-    WHEN sqlc.arg(sort_by) = 'title' THEN title
-    WHEN sqlc.arg(sort_by) = 'html_version' THEN html_version
-    WHEN sqlc.arg(sort_by) = 'status' THEN status
-    WHEN sqlc.arg(sort_by) = 'internal_links' THEN CAST(internal_links AS CHAR)
-    WHEN sqlc.arg(sort_by) = 'external_links' THEN CAST(external_links AS CHAR)
-    ELSE created_at
-  END
-DESC
-LIMIT ? OFFSET ?;
-
-
 -- name: UpdateStatus :exec
 UPDATE urls SET status = ?
 WHERE id = ?;
