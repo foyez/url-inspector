@@ -1,44 +1,20 @@
-import { fetchURLs } from "@/api/urls";
-import type { TableState } from "@/reducers/tableReducer";
 import type { URLData } from "@/types";
 import { useEffect } from "react";
 
 type UseCrawlPollingProps = {
   urls: URLData[];
-  table: TableState;
-  update: (urls: URLData[]) => void;
+  reload: () => void;
 };
 
-export function UseCrawlPolling({ urls, table, update }: UseCrawlPollingProps) {
+export function useCrawlPolling({ urls, reload }: UseCrawlPollingProps) {
   useEffect(() => {
-    const hasActive = urls.some((u) => u.status == "running");
-    if (!hasActive) return;
+    const hasRunning = urls.some((u) => u.status === "running");
+    if (!hasRunning) return;
 
-    const interval = setInterval(async () => {
-      try {
-        const { urls } = await fetchURLs({
-          search: table.search,
-          sortBy: table.sortBy,
-          sortDir: table.sortDir,
-          page: table.page,
-          pageSize: table.pageSize,
-          filters: table.filters,
-        });
-        update(urls);
-      } catch (err) {
-        console.error("Polling error", err);
-      }
+    const interval = setInterval(() => {
+      reload();
     }, import.meta.env.VITE_POLLING_TIME);
 
     return () => clearInterval(interval);
-  }, [
-    urls,
-    table.search,
-    table.sortBy,
-    table.sortDir,
-    table.page,
-    table.pageSize,
-    table.filters,
-    update,
-  ]);
+  }, [urls, reload]);
 }

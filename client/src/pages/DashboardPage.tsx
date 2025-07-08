@@ -1,20 +1,22 @@
-import { useEffect, useReducer, type ChangeEvent } from "react";
-import toast from "react-hot-toast";
 import debounce from "lodash.debounce";
+import { useEffect } from "react";
 
-import { createURL, deleteURLs, fetchURLs, rerunURLs } from "@/api/urls";
-import URLForm from "@/components/URLForm";
 import URLTable from "@/components/URLTable";
-import { UseCrawlPolling } from "@/hooks/useCrawlPolling";
+import { useCrawlPolling } from "@/hooks/useCrawlPolling";
+import { useDashboard } from "@/hooks/useDashboard";
 import { useTableControls } from "@/hooks/useTableControls";
-import {
-  dashboardReducer,
-  initialDashboardState,
-} from "@/reducers/dashboardReducer";
-import type { URLData } from "@/types";
+import URLControls from "@/components/URLControls";
 
 function DashboardPage() {
-  const [state, dispatch] = useReducer(dashboardReducer, initialDashboardState);
+  const {
+    state,
+    dispatch,
+    loadData,
+    handleSubmit,
+    handleDelete,
+    handleRerun,
+    updateURLs,
+  } = useDashboard();
   const {
     state: table,
     setTotal,
@@ -24,134 +26,44 @@ function DashboardPage() {
     setFilters,
   } = useTableControls();
 
-  const loadData = async () => {
-    dispatch({ type: "SET_LOADING", loading: true });
-    try {
-      const { urls, total } = await fetchURLs({
+  const fetchAll = () => {
+    loadData(
+      {
         search: table.search,
         sortBy: table.sortBy,
         sortDir: table.sortDir,
         page: table.page,
         pageSize: table.pageSize,
         filters: table.filters,
-      });
-      dispatch({ type: "SET_URLS", urls });
-      setTotal(total);
-    } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : "Failed to load URLs";
-      toast.error(msg);
-    } finally {
-      dispatch({ type: "SET_LOADING", loading: false });
-    }
+      },
+      setTotal
+    );
   };
 
   useEffect(() => {
-    loadData();
+    fetchAll();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [table.search, table.sortBy, table.sortDir, table.page, table.filters]);
 
-  UseCrawlPolling({
+  useCrawlPolling({
     urls: state.urls,
-    table,
-    update: (urls) => dispatch({ type: "SET_URLS", urls }),
+    reload: fetchAll,
   });
 
   const debouncedSearch = debounce((value: string) => {
     setSearch(value);
   }, import.meta.env.VITE_DEBOUNCED_SEARCH_TIME);
 
-  const handleSearch = (e: ChangeEvent<HTMLInputElement>) => {
-    debouncedSearch(e.target.value);
-  };
-
-  const handleSubmit = async (url: string) => {
-    try {
-      await createURL(url);
-      toast.success("URL added successfully");
-      loadData();
-    } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : "Failed to add URL";
-      toast.error(msg);
-    }
-  };
-
-  const handleDelete = async () => {
-    try {
-      await deleteURLs(state.selected);
-      toast.success("URLs deleted");
-      loadData();
-      dispatch({ type: "CLEAR_SELECTION" });
-    } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : "Failed to delete";
-      toast.error(msg);
-    }
-  };
-
-  const handleRerun = async () => {
-    try {
-      await rerunURLs(state.selected);
-      toast.success("Crawling restarted");
-      loadData();
-      dispatch({ type: "CLEAR_SELECTION" });
-    } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : "Failed to rerun";
-      toast.error(msg);
-    }
-  };
-
-  const updateURLs = (modifier: (prev: URLData[]) => URLData[]) => {
-    dispatch({ type: "SET_URLS", urls: modifier(state.urls) });
-  };
-
   return (
     <div className="max-w-7xl mx-auto px-4 py-6 space-y-6">
       <h1 className="text-2xl font-bold text-gray-800">URL Dashboard</h1>
 
-      <URLForm onSubmit={handleSubmit} />
-
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-        <input
-          type="text"
-          placeholder="Search by title"
-          className="border px-3 py-2 rounded-md w-full max-w-md"
-          onChange={handleSearch}
-        />
-
-        <div className="flex flex-col sm:flex-row gap-4 w-full md:w-auto">
-          <select
-            onChange={(e) =>
-              setFilters({
-                ...table.filters,
-                status: e.target.value || undefined,
-              })
-            }
-            className="border border-gray-300 px-4 py-2 rounded-md  focus:outline-none focus:ring focus:ring-blue-200"
-            value={table.filters.status || ""}
-          >
-            <option value="">All Statuses</option>
-            <option value="queued">Queued</option>
-            <option value="running">Running</option>
-            <option value="done">Done</option>
-            <option value="error">Error</option>
-          </select>
-
-          <select
-            onChange={(e) =>
-              setFilters({
-                ...table.filters,
-                html_version: e.target.value || undefined,
-              })
-            }
-            className="border border-gray-300 px-4 py-2 rounded-md  focus:outline-none focus:ring focus:ring-blue-200"
-            value={table.filters.html_version || ""}
-          >
-            <option value="">All HTML Versions</option>
-            <option value="HTML5">HTML5</option>
-            <option value="HTML4">HTML4</option>
-            <option value="Unknown">Unknown</option>
-          </select>
-        </div>
-      </div>
+      <URLControls
+        onAdd={(url) => handleSubmit(url, fetchAll)}
+        onSearch={debouncedSearch}
+        filters={table.filters}
+        onFilterChange={setFilters}
+      />
 
       <URLTable
         urls={state.urls}
@@ -159,8 +71,8 @@ function DashboardPage() {
         toggleSelect={(id) => dispatch({ type: "TOGGLE_SELECT", id })}
         selectAll={() => dispatch({ type: "SELECT_ALL" })}
         clearSelection={() => dispatch({ type: "CLEAR_SELECTION" })}
-        onDelete={handleDelete}
-        onRerun={handleRerun}
+        onDelete={() => handleDelete(fetchAll)}
+        onRerun={() => handleRerun(fetchAll)}
         loading={state.loading}
         updateURLs={updateURLs}
         sortBy={table.sortBy}
