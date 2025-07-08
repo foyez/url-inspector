@@ -26,7 +26,10 @@
     /* Import alias */
     "paths": {
       "@/*": ["./src/*"]
-    }
+    },
+
+    /* testing */
+    "types": ["vitest/globals"]
   },
   "include": ["src"]
 }
