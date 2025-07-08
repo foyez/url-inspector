@@ -18,6 +18,7 @@ function URLForm({ onSubmit }: URLFormProps) {
 
   return (
     <form
+      role="form"
       onSubmit={handleSubmit}
       className="flex flex-col sm:flex-row gap-2 items-stretch sm:items-center"
     >
