@@ -88,89 +88,73 @@ function URLTable({
   }
 
   return (
-    <div className="border rounded overflow-x-auto">
-      <table className="w-full table-auto text-sm">
-        <thead className="bg-gray-100">
-          <tr>
-            <th className="p-2">
+    <div className="border rounded overflow-x-auto shadow-sm bg-white">
+      <table className="w-full table-auto text-sm min-w-[800px]">
+        <thead className="bg-gray-100 text-gray-700 text-left">
+          <tr className="border-b">
+            <th className="p-3 text-center">
               <input
                 type="checkbox"
                 onChange={(e) =>
                   e.target.checked ? selectAll() : clearSelection()
                 }
                 checked={allSelected}
+                className="w-4 h-4"
               />
             </th>
-            <th
-              className="cursor-pointer p-2 text-left"
-              onClick={() => setSortBy("title")}
-            >
-              Title {sortBy === "title" && (sortDir === "asc" ? " ▲" : " ▼")}
-            </th>
-            <th
-              className="cursor-pointer p-2"
-              onClick={() => setSortBy("html_version")}
-            >
-              HTML Version{" "}
-              {sortBy === "html_version" && (sortDir === "asc" ? " ▲" : " ▼")}
-            </th>
-            <th className="p-2">Login</th>
-            <th
-              className="cursor-pointer p-2"
-              onClick={() => setSortBy("internal_links")}
-            >
-              Internal{" "}
-              {sortBy === "internal_links" && (sortDir === "asc" ? " ▲" : " ▼")}
-            </th>
-            <th
-              className="cursor-pointer p-2"
-              onClick={() => setSortBy("external_links")}
-            >
-              External{" "}
-              {sortBy === "external_links" && (sortDir === "asc" ? " ▲" : " ▼")}
-            </th>
-            <th
-              className="cursor-pointer p-2"
-              onClick={() => setSortBy("broken_links")}
-            >
-              Broken{" "}
-              {sortBy === "broken_links" && (sortDir === "asc" ? " ▲" : " ▼")}
-            </th>
-            <th
-              className="cursor-pointer p-2"
-              onClick={() => setSortBy("status")}
-            >
-              Status {sortBy === "status" && (sortDir === "asc" ? " ▲" : " ▼")}
-            </th>
-            <th className="p-2 text-left">Action</th>
+            {[
+              { label: "Title", key: "title" },
+              { label: "HTML Version", key: "html_version" },
+              { label: "Internal", key: "internal_links" },
+              { label: "External", key: "external_links" },
+              { label: "Broken", key: "broken_links" },
+              { label: "Status", key: "status" },
+            ].map((col) => (
+              <th
+                key={col.key}
+                className="cursor-pointer p-3 whitespace-nowrap text-center"
+                onClick={() => setSortBy(col.key)}
+              >
+                {col.label}{" "}
+                {sortBy === col.key && (sortDir === "asc" ? "▲" : "▼")}
+              </th>
+            ))}
+            <th className="p-3 text-center">Login</th>
+            <th className="p-3 text-center">Action</th>
           </tr>
         </thead>
+
         <tbody>
           {urls.map((url) => (
-            <tr key={url.id} className="border-t hover:bg-amber-50">
-              <td className="p-2 text-center">
+            <tr
+              key={url.id}
+              className="border-t hover:bg-amber-50 transition-colors duration-150"
+            >
+              <td className="p-3 text-center">
                 <input
                   type="checkbox"
                   checked={selected.includes(url.id)}
                   onChange={() => toggleSelect(url.id)}
+                  className="w-4 h-4"
                 />
               </td>
-              <td className="p-2 text-left text-blue-600 underline">
+              <td className="p-3 text-blue-600 underline max-w-[200px] truncate text-left">
                 <Link to={`/details/${url.id}`}>
                   {url.title || "(untitled)"}
                 </Link>
               </td>
-              <td className="p-2 text-center">{url.html_version}</td>
-              <td className="p-2 text-center">
-                {url.has_login_form ? "Yes" : "No"}
-              </td>
-              <td className="p-2 text-center">{url.internal_links}</td>
-              <td className="p-2 text-center">{url.external_links}</td>
-              <td className="p-2 text-center">{url.broken_links}</td>
-              <td className="p-2 text-center">
+              <td className="p-3 text-center">{url.html_version}</td>
+
+              <td className="p-3 text-center">{url.internal_links}</td>
+              <td className="p-3 text-center">{url.external_links}</td>
+              <td className="p-3 text-center">{url.broken_links}</td>
+              <td className="p-3 text-center">
                 <StatusBadge status={url.status} />
               </td>
-              <td className="p-2 text-center space-x-1">
+              <td className="p-3 text-center">
+                {url.has_login_form ? "Yes" : "No"}
+              </td>
+              <td className="p-3 text-center space-x-2">
                 {url.status === "queued" || url.status === "error" ? (
                   <button
                     onClick={() => handleStart(url.id)}
@@ -193,23 +177,23 @@ function URLTable({
       </table>
 
       {selected.length > 0 && (
-        <div className="flex justify-end p-2 gap-2 bg-gray-50 border-t">
+        <div className="flex justify-end p-3 gap-2 bg-gray-50 border-t">
           <button
             onClick={onRerun}
-            className="cursor-pointer px-4 py-1 bg-yellow-500 text-white rounded"
+            className="cursor-pointer px-4 py-1 bg-yellow-500 text-white rounded text-sm hover:bg-yellow-600"
           >
             Rerun
           </button>
           <button
             onClick={onDelete}
-            className="cursor-pointer px-4 py-1 bg-red-600 text-white rounded"
+            className="px-4 py-1 bg-red-600 text-white rounded text-sm hover:bg-red-700"
           >
             Delete
           </button>
         </div>
       )}
 
-      <div className="flex justify-between items-center px-4 py-2 text-sm bg-gray-50 border-t">
+      <div className="flex flex-col sm:flex-row justify-between items-center px-4 py-2 text-sm bg-gray-50 border-t gap-2">
         <div>
           Showing {urls.length} of {total} result{urls.length !== 1 && "s"}
         </div>

@@ -21,6 +21,7 @@ function Dashboard() {
     setSearch,
     setSortBy,
     setPage,
+    setFilters,
   } = useTableControls();
 
   const loadData = async () => {
@@ -32,6 +33,7 @@ function Dashboard() {
         sortDir: table.sortDir,
         page: table.page,
         pageSize: table.pageSize,
+        filters: table.filters,
       });
       dispatch({ type: "SET_URLS", urls });
       setTotal(total);
@@ -46,7 +48,7 @@ function Dashboard() {
   useEffect(() => {
     loadData();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [table.search, table.sortBy, table.sortDir, table.page]);
+  }, [table.search, table.sortBy, table.sortDir, table.page, table.filters]);
 
   UseCrawlPolling({
     urls: state.urls,
@@ -102,15 +104,55 @@ function Dashboard() {
   };
 
   return (
-    <div className="max-w-7xl mx-auto p-6 space-y-4">
-      <h1 className="text-2xl font-semibold">URL Dashboard</h1>
+    <div className="max-w-7xl mx-auto px-4 py-6 space-y-6">
+      <h1 className="text-2xl font-bold text-gray-800">URL Dashboard</h1>
+
       <URLForm onSubmit={handleSubmit} />
-      <input
-        type="text"
-        placeholder="Search URLs"
-        className="border px-3 py-2 rounded-md w-full max-w-md"
-        onChange={handleSearch}
-      />
+
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        <input
+          type="text"
+          placeholder="Search by title"
+          className="border px-3 py-2 rounded-md w-full max-w-md"
+          onChange={handleSearch}
+        />
+
+        <div className="flex flex-col sm:flex-row gap-4 w-full md:w-auto">
+          <select
+            onChange={(e) =>
+              setFilters({
+                ...table.filters,
+                status: e.target.value || undefined,
+              })
+            }
+            className="border border-gray-300 px-4 py-2 rounded-md  focus:outline-none focus:ring focus:ring-blue-200"
+            value={table.filters.status || ""}
+          >
+            <option value="">All Statuses</option>
+            <option value="queued">Queued</option>
+            <option value="running">Running</option>
+            <option value="done">Done</option>
+            <option value="error">Error</option>
+          </select>
+
+          <select
+            onChange={(e) =>
+              setFilters({
+                ...table.filters,
+                html_version: e.target.value || undefined,
+              })
+            }
+            className="border border-gray-300 px-4 py-2 rounded-md  focus:outline-none focus:ring focus:ring-blue-200"
+            value={table.filters.html_version || ""}
+          >
+            <option value="">All HTML Versions</option>
+            <option value="HTML5">HTML5</option>
+            <option value="HTML4">HTML4</option>
+            <option value="Unknown">Unknown</option>
+          </select>
+        </div>
+      </div>
+
       <URLTable
         urls={state.urls}
         selected={state.selected}

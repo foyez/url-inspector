@@ -22,11 +22,13 @@ func isValidSortDir(dir string) bool {
 }
 
 type ListURLsParams struct {
-	Search  string `json:"search"`
-	SortBy  string `json:"sort_by"`
-	SortDir string `json:"sort_dir"`
-	Limit   int32  `json:"limit"`
-	Offset  int32  `json:"offset"`
+	Search      string  `json:"search"`
+	SortBy      string  `json:"sort_by"`
+	SortDir     string  `json:"sort_dir"`
+	Limit       int32   `json:"limit"`
+	Offset      int32   `json:"offset"`
+	Status      *string `json:"status"`
+	HtmlVersion *string `json:"html_version"`
 }
 
 func (q *Queries) ListURLs(ctx context.Context, arg ListURLsParams) ([]Url, error) {
@@ -50,6 +52,8 @@ func (q *Queries) ListURLs(ctx context.Context, arg ListURLsParams) ([]Url, erro
 				MATCH(title) AGAINST (? IN NATURAL LANGUAGE MODE) OR
 				title LIKE CONCAT('%%', ?, '%%')
 			)
+			AND (? IS NULL OR status = ?)
+			AND (? IS NULL OR html_version = ?)
 		ORDER BY %s %s
 		LIMIT ? OFFSET ?
 		`, arg.SortBy, arg.SortDir)
@@ -58,6 +62,10 @@ func (q *Queries) ListURLs(ctx context.Context, arg ListURLsParams) ([]Url, erro
 		arg.Search,
 		arg.Search,
 		arg.Search,
+		arg.Status,
+		arg.Status,
+		arg.HtmlVersion,
+		arg.HtmlVersion,
 		arg.Limit,
 		arg.Offset,
 	)
@@ -94,12 +102,18 @@ func (q *Queries) ListURLs(ctx context.Context, arg ListURLsParams) ([]Url, erro
 	return urls, nil
 }
 
+type CountURLsParams struct {
+	Search      string  `json:"search"`
+	Status      *string `json:"status"`
+	HtmlVersion *string `json:"html_version"`
+}
+
 const countURLs = `-- name: CountURLs :one
-SELECT COUNT(*) FROM urls WHERE (? = '' OR MATCH(title) AGAINST (? IN NATURAL LANGUAGE MODE) OR title LIKE CONCAT('%', ?, '%'))
+SELECT COUNT(*) FROM urls WHERE (? = '' OR MATCH(title) AGAINST (? IN NATURAL LANGUAGE MODE) OR title LIKE CONCAT('%', ?, '%')) AND (? IS NULL OR status = ?) AND (? IS NULL OR html_version = ?)
 `
 
-func (q *Queries) CountURLs(ctx context.Context, search string) (int64, error) {
-	row := q.db.QueryRowContext(ctx, countURLs, search, search, search)
+func (q *Queries) CountURLs(ctx context.Context, arg CountURLsParams) (int64, error) {
+	row := q.db.QueryRowContext(ctx, countURLs, arg.Search, arg.Search, arg.Search, arg.Status, arg.Status, arg.HtmlVersion, arg.HtmlVersion)
 	var count int64
 	err := row.Scan(&count)
 	return count, err

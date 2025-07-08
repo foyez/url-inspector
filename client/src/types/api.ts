@@ -18,6 +18,10 @@ export type ListURLsOptions = {
   sortBy?: string;
   sortDir?: SortDir;
   search?: string;
+  filters?: {
+    status?: string;
+    html_version?: string;
+  };
 };
 
 export type ListURLsResponse = {

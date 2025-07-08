@@ -59,11 +59,13 @@ func (server *Server) createURL(ctx *gin.Context) {
 }
 
 type listURLsQuery struct {
-	Page     int    `form:"page"`
-	PageSize int    `form:"page_size"`
-	SortBy   string `form:"sort_by"`
-	SortDir  string `form:"sort_dir"`
-	Search   string `form:"search"`
+	Page        int     `form:"page"`
+	PageSize    int     `form:"page_size"`
+	SortBy      string  `form:"sort_by"`
+	SortDir     string  `form:"sort_dir"`
+	Search      string  `form:"search"`
+	Status      *string `form:"status"`
+	HTMLVersion *string `form:"html_version"`
 }
 
 func (server *Server) listURLs(ctx *gin.Context) {
@@ -85,18 +87,24 @@ func (server *Server) listURLs(ctx *gin.Context) {
 	offset := (q.Page - 1) * q.PageSize
 
 	urls, err := server.store.ListURLs(ctx, db.ListURLsParams{
-		Search:  q.Search,
-		SortBy:  q.SortBy,
-		SortDir: q.SortDir,
-		Limit:   int32(q.PageSize),
-		Offset:  int32(offset),
+		Search:      q.Search,
+		SortBy:      q.SortBy,
+		SortDir:     q.SortDir,
+		Limit:       int32(q.PageSize),
+		Offset:      int32(offset),
+		Status:      q.Status,
+		HtmlVersion: q.HTMLVersion,
 	})
 	if err != nil {
 		Fail(ctx, http.StatusInternalServerError, "failed to fetch URL list")
 		return
 	}
 
-	total, err := server.store.CountURLs(ctx, q.Search)
+	total, err := server.store.CountURLs(ctx, db.CountURLsParams{
+		Search:      q.Search,
+		Status:      q.Status,
+		HtmlVersion: q.HTMLVersion,
+	})
 	if err != nil {
 		Fail(ctx, http.StatusInternalServerError, "failed to count URLs")
 		return

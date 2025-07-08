@@ -22,6 +22,7 @@ export function UseCrawlPolling({ urls, table, update }: UseCrawlPollingProps) {
           sortDir: table.sortDir,
           page: table.page,
           pageSize: table.pageSize,
+          filters: table.filters,
         });
         update(urls);
       } catch (err) {
@@ -37,6 +38,7 @@ export function UseCrawlPolling({ urls, table, update }: UseCrawlPollingProps) {
     table.sortDir,
     table.page,
     table.pageSize,
+    table.filters,
     update,
   ]);
 }

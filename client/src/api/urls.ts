@@ -16,6 +16,9 @@ export const fetchURLs = async (
   if (options.sortBy) params.append("sort_by", options.sortBy);
   if (options.sortDir) params.append("sort_dir", options.sortDir);
   if (options.search) params.append("search", options.search);
+  if (options.filters?.status) params.append("status", options.filters.status);
+  if (options.filters?.html_version)
+    params.append("html_version", options.filters.html_version);
 
   const res = await client.get<ApiResponse<ListURLsResponse>>(
     `/urls/?${params}`,
