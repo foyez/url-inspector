@@ -1,14 +1,14 @@
 import { Navigate, Route, Routes } from "react-router-dom";
-import Dashboard from "./pages/Dashboard";
+import DashboardPage from "./pages/DashboardPage";
 
 import "./App.css";
-import URLDetails from "./pages/URLDetails";
+import URLDetailsPage from "./pages/URLDetailsPage";
 
 function App() {
   return (
     <Routes>
-      <Route path="/" element={<Dashboard />} />
-      <Route path="/details/:id" element={<URLDetails />} />
+      <Route path="/" element={<DashboardPage />} />
+      <Route path="/details/:id" element={<URLDetailsPage />} />
       <Route path="*" element={<Navigate to="/" />} />
     </Routes>
   );

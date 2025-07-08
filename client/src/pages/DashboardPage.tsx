@@ -13,7 +13,7 @@ import {
 } from "@/reducers/dashboardReducer";
 import type { URLData } from "@/types";
 
-function Dashboard() {
+function DashboardPage() {
   const [state, dispatch] = useReducer(dashboardReducer, initialDashboardState);
   const {
     state: table,
@@ -174,4 +174,4 @@ function Dashboard() {
   );
 }
 
-export default Dashboard;
+export default DashboardPage;

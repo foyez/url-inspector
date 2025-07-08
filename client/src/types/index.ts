@@ -29,5 +29,5 @@ export type URLDetails = {
     h5: number;
     h6: number;
   };
-  broken_links: { link: string; statusCode: number }[];
+  broken_links: { link: string; status_code: number }[];
 };

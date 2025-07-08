@@ -57,7 +57,7 @@ export const rerunURLs = async (ids: number[]): Promise<void> => {
   }
 };
 
-export const getURLDetails = async (id: number): Promise<URLDetails> => {
+export const fetchURLDetails = async (id: number): Promise<URLDetails> => {
   const res = await client.get<ApiResponse<URLDetails>>(`/urls/${id}`);
   if (!res.data.success) {
     throw new Error(res.data.error || "Failed to get details");
