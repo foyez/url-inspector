@@ -26,6 +26,7 @@ function URLControls({ onAdd, onSearch, filters, onFilterChange }: Props) {
   return (
     <div className="space-y-4">
       <form
+        role="form"
         onSubmit={handleSubmit}
         className="flex flex-col sm:flex-row gap-2 items-stretch sm:items-center"
       >
@@ -45,7 +46,7 @@ function URLControls({ onAdd, onSearch, filters, onFilterChange }: Props) {
           type="submit"
           className="cursor-pointer bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors"
         >
-          Add
+          Add URL
         </button>
       </form>
 
