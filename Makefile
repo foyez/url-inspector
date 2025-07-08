@@ -1,4 +1,5 @@
 include backend/.env
+export
 
 ## ===========
 ## BACKEND
@@ -57,6 +58,13 @@ sqlc:
 	@echo "🔧 generating go code from SQL..."
 	$(DOCKER_CMD) sqlc generate
 
+seed:
+	@echo "🌱 Seeding demo data into DB..."
+	docker compose -p dev \
+		-f ${BE_DIR}/docker-compose.yaml \
+		-f ${BE_DIR}/docker-compose.dev.yaml \
+		exec -T mysql mysql -u ${DB_USER} -p${DB_PASSWORD} ${DB_NAME} < ${BE_DIR}/doc/seed.sql
+
 ## ===========
 ## FRONTEND
 ## ===========
@@ -76,6 +84,6 @@ fe_test:
 	cd $(FE_DIR) && npm run test
 
 .PHONY: \
-	up up_dev down down_dev sqlc \
+	up up_dev down down_dev sqlc seed \
 	create_migration migrateup migratedown \
 	fe_install fe_dev fe_build fe_test

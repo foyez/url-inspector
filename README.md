@@ -92,6 +92,25 @@ Authorization: Bearer secret_token
 
 Make sure the value matches the one in your `backend/.env` files.
 
+### 🚀 Running the Project
+
+#### 1. Start Backend and Frontend server
+
+```bash
+make up_dev
+make fe_dev
+```
+
+#### 2. Seed demo data (optional)
+
+```bash
+make seed
+```
+
+> Make sure the MySQL container is fully running before running this command. This will populate the database with 20 demo URLs, related heading and link data for testing purposes.
+
+---
+
 ## 📁 Project Structure
 
 ```
