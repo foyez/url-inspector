@@ -61,17 +61,19 @@ sqlc:
 ## FRONTEND
 ## ===========
 
+FE_DIR=client
+
 fe_install:
-	cd client && npm i
+	cd $(FE_DIR) && npm i
 
 fe_dev:
-	cd client && npm run dev
+	cd $(FE_DIR) && npm run dev
 
 fe_build:
-	cd client && npm run build
+	cd $(FE_DIR) && npm run build
 
 fe_test:
-	cd client && npm run test
+	cd $(FE_DIR) && npm run test
 
 .PHONY: \
 	up up_dev down down_dev sqlc \
