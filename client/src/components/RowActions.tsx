@@ -10,7 +10,7 @@ function RowActions({ status, onStart, onStop }: Props) {
       {status === "queued" || status === "error" ? (
         <button
           onClick={onStart}
-          className="text-blue-600 underline text-xs focus:outline-none focus:ring focus:ring-blue-300 rounded"
+          className="cursor-pointer text-blue-600 underline text-xs focus:outline-none focus:ring focus:ring-blue-300 rounded"
           aria-label="Start crawling"
         >
           Start
@@ -18,7 +18,7 @@ function RowActions({ status, onStart, onStop }: Props) {
       ) : status === "running" ? (
         <button
           onClick={onStop}
-          className="text-red-600 underline text-xs focus:outline-none focus:ring focus:ring-red-300 rounded"
+          className="cursor-pointer text-red-600 underline text-xs focus:outline-none focus:ring focus:ring-red-300 rounded"
           aria-label="Stop crawling"
         >
           Stop
