@@ -1,3 +1,4 @@
+import Button from "@/atoms/Button";
 import { useState, type FormEvent } from "react";
 
 type Props = {
@@ -42,12 +43,13 @@ function URLControls({ onAdd, onSearch, filters, onFilterChange }: Props) {
           aria-label="Enter website URL"
           className="border border-gray-300 px-4 py-2 rounded-md w-full sm:max-w-md focus:outline-none focus:ring focus:ring-blue-200"
         />
-        <button
+        {/* <button
           type="submit"
           className="cursor-pointer bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors"
         >
           Add URL
-        </button>
+        </button> */}
+        <Button type="submit">Add URL</Button>
       </form>
 
       <div className="flex flex-col md:flex-row md:items-center gap-4">
