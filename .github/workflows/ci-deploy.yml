@@ -24,8 +24,8 @@ jobs:
           node-version: "22"
 
       - name: Install dependencies
-        run: make fe_install
+        run: cd client && npm ci
 
       - name: Run tests
-        run: make fe_test_ci
+        run: cd client && npm run test:ci
 
