@@ -47,6 +47,12 @@ jobs:
         run: cd client && npm ci
 
       - name: Build client app
+        env:
+          VITE_API_BASE_URL: ${{ secrets.VITE_API_BASE_URL }}
+          VITE_API_TOKEN: ${{ secrets.VITE_API_TOKEN }}
+          VITE_POLLING_TIME: ${{ secrets.VITE_POLLING_TIME }}
+          VITE_DEBOUNCED_SEARCH_TIME: ${{ secrets.VITE_DEBOUNCED_SEARCH_TIME }}
+          VITE_PAGE_SIZE: ${{ secrets.VITE_PAGE_SIZE }}
         run: cd client && npm run build
 
       - name: Upload build artifacts
