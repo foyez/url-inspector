@@ -45,6 +45,10 @@ function URLTable({
 }: URLTableProps) {
   const allSelected = urls.length > 0 && selected.length === urls.length;
 
+  const envPageSize = Number(import.meta.env.VITE_PAGE_SIZE);
+  const safePageSize =
+    Number.isFinite(envPageSize) && envPageSize > 0 ? envPageSize : 10;
+
   const handleStart = async (id: number) => {
     try {
       const res = await startCrawl(id);
@@ -179,7 +183,7 @@ function URLTable({
       <Pagination
         page={page}
         setPage={setPage}
-        pageSize={parseInt(import.meta.env.VITE_PAGE_SIZE)}
+        pageSize={safePageSize}
         total={total}
       />
     </div>
