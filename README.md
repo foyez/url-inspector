@@ -120,3 +120,12 @@ url-inspector/
 ├── Makefile       # Unified commands for all environments
 └── README.md     # Setup instructions
 ```
+
+## Next implementation
+
+- Login with refresh token
+- messaging queue
+- websocket
+- redis caching
+- make less look like llm generation
+- Rate limiting
