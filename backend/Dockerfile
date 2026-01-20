@@ -33,12 +33,11 @@ RUN CGO_ENABLED=0 GOOS=linux go build -ldflags="-s -w" -o main ./cmd/server
 # prod stage
 FROM alpine:3.19 AS prod
 ENV ENVIRONMENT=production
+# create custom user and group
+RUN addgroup -S appgroup && adduser -S appuser -G appgroup
 WORKDIR /app
 COPY --from=build --chown=appuser:appgroup /app/internal/db/migrations ./internal/db/migrations
 COPY --from=build --chown=appuser:appgroup /app/main .
-COPY .env .
-# create custom user and group
-RUN addgroup -S appgroup && adduser -S appuser -G appgroup
 # switch to the custom user
 USER appuser:appgroup
 ENV PORT=4000

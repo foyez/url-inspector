@@ -29,7 +29,7 @@ func main() {
 	// Connect to the database
 	conn, err := sql.Open(config.DBDriver, config.DBSource)
 	if err != nil {
-		log.Fatal("❌ DB connection error: ", err)
+		log.Fatal("DB connection error: ", err)
 	}
 	defer conn.Close()
 
@@ -58,5 +58,5 @@ func runDBMigration(migrationURL, dbSource string) {
 		log.Fatal("failed to run migration up: ", err)
 	}
 
-	log.Println("✅ db migrated successfully")
+	log.Println("db migrated successfully")
 }

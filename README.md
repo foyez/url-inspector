@@ -2,7 +2,7 @@
 
 This full-stack web app allows users to analyze websites by crawling pages and collecting data like HTML version, headings, link stats, login form detection, and more.
 
-## 📦 Tech Stack
+## Tech Stack
 
 - **Frontend**: React 19 + TypeScript, Tailwind CSS, Vite
 - **Backend**: Go (Gin), MySQL, SQLC, Golang-Migrate
@@ -30,7 +30,7 @@ cp client/.env.example client/.env
 
 ---
 
-## ⚙️ Run with Makefile
+## Run with Makefile
 
 All actions are available using the top-level `Makefile`.
 
@@ -60,7 +60,7 @@ make migratedown   # Rollback last DB migration (via Docker)
 
 ---
 
-## 🔐 Authorization Token
+## Authorization Token
 
 All API requests require an auth token.
 
@@ -92,7 +92,7 @@ Authorization: Bearer secret_token
 
 Make sure the value matches the one in your `backend/.env` files.
 
-### 🚀 Running the Project
+### Running the Project
 
 #### 1. Start Backend and Frontend server
 
@@ -111,7 +111,7 @@ make seed
 
 ---
 
-## 📁 Project Structure
+## Project Structure
 
 ```
 url-inspector/
