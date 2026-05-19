@@ -43,7 +43,7 @@ jobs:
           file: ./backend/Dockerfile
           target: prod
           push: true
-          tags: ${{ secrets.DOCKER_USERNAME }}/url-inspector-backend:
+          tags: ${{ secrets.DOCKER_USERNAME }}/url-inspector-backend:latest
           
           # Docker layer caching
           cache-from: type=gha
